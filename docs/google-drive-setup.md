@@ -27,8 +27,10 @@ There is no client secret, no server, and Kitroid never receives user data.
 Copy the client ID (`xxxxxxxx.apps.googleusercontent.com`).
 
 ## 4. Give it to the build
-- GitHub repo → **Settings → Secrets and variables → Actions → Variables** →
-  `PUBLIC_GOOGLE_CLIENT_ID` = the client ID. The deploy workflow passes it to the build.
+- GitHub repo → **Settings → Secrets and variables → Actions → Variables tab** (not Secrets) →
+  **New repository variable** `PUBLIC_GOOGLE_CLIENT_ID` = the client ID. The deploy workflow passes it
+  to the build (`vars.PUBLIC_GOOGLE_CLIENT_ID`), then re-run the deploy (Actions → Deploy → Run workflow,
+  or push any commit). Or from a terminal: `gh variable set PUBLIC_GOOGLE_CLIENT_ID --repo osify/kits --body "<id>"`.
 - Local development: create `.env` with `PUBLIC_GOOGLE_CLIENT_ID=...` (it is git-ignored).
 
 The client ID is public by design (it is visible in the page). Without it, the Backup screen hides
@@ -37,7 +39,8 @@ Google Drive and offers the folder and download backups only.
 ## What users see
 - Backup → **Connect Google Drive** → Google consent popup ("Kitroid wants to see, edit, create
   and delete only the specific Google Drive files you use with this app").
-- Files: `My Drive / Kitroid / POS / <shop name> / kitroid-pos-YYYYMMDD-HHmm.zip`.
+- Files: `My Drive / Kitroid / <tool> / <shop or book name> / kitroid-<tool>-YYYYMMDD-HHmm.zip`
+  (tools: POS, Income & Expense, Customers, Tong Tin; POS sync files in `<shop>/sync/`).
 - Kitroid keeps the newest 30 backups plus one per month for the last 12 months.
 - Browser-only sign-in gives a ~1 hour token and no refresh token, so automatic Drive backups run
   while that token is valid; afterwards a single tap on **Back up now** renews it.
