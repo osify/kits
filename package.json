@@ -1,0 +1,38 @@
+{
+  "name": "kitroid-web",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Kitroid: free offline business tools for Cambodian small and medium businesses. Static site on GitHub Pages (kitroid.com).",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check && vue-tsc --noEmit -p tsconfig.json",
+    "test": "node scripts/test-sync.mts && node scripts/test-finance.mts && node scripts/test-money.mts"
+  },
+  "dependencies": {
+    "@astrojs/vue": "^7.1.6",
+    "@fontsource-variable/kantumruy-pro": "^5.3.0",
+    "@primeuix/themes": "^2.0.3",
+    "@sqlite.org/sqlite-wasm": "^3.54.1-build1",
+    "@tailwindcss/vite": "^4.3.5",
+    "astro": "^7.4.12",
+    "fflate": "^0.8.3",
+    "pinia": "^4.1.0",
+    "primeicons": "^8.0.2",
+    "primevue": "~4.5.5",
+    "tailwindcss": "^4.3.5",
+    "tailwindcss-primeui": "^0.6.1",
+    "vue": "^3.5.45",
+    "vue-i18n": "^11.4.20",
+    "vue-router": "^5.5.1"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.12",
+    "@vite-pwa/assets-generator": "^2.0.0",
+    "@vite-pwa/astro": "^2.0.2",
+    "typescript": "~6.0.3",
+    "vue-tsc": "^3.3.14"
+  }
+}

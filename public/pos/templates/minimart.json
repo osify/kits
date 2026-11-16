@@ -1,0 +1,31 @@
+{
+  "id": "minimart",
+  "currency": "KHR",
+  "categories": [
+    { "name": "Drinks", "name_km": "ភេសជ្ជៈ", "color": "#0e7490", "icon": "🥤", "items": [
+      { "name": "Water 500ml", "name_km": "ទឹកសុទ្ធ ៥០០ml", "price": 1000, "icon": "💧" },
+      { "name": "Cola (can)", "name_km": "កូកាកូឡា (កំប៉ុង)", "price": 2500, "icon": "🥤" },
+      { "name": "Energy drink", "name_km": "ភេសជ្ជៈប៉ូវកម្លាំង", "price": 2500, "icon": "⚡" },
+      { "name": "Beer (can)", "name_km": "ស្រាបៀរ (កំប៉ុង)", "price": 3000, "icon": "🍺" },
+      { "name": "Milk (box)", "name_km": "ទឹកដោះគោ (ប្រអប់)", "price": 2000, "icon": "🥛" } ] },
+    { "name": "Snacks", "name_km": "នំចំណី", "color": "#ca8a04", "icon": "🍪", "items": [
+      { "name": "Chips", "name_km": "ដំឡូងបារាំងចៀន", "price": 2000, "icon": "🍟" },
+      { "name": "Biscuits", "name_km": "នំប៊ីស្ឃីត", "price": 1500, "icon": "🍪" },
+      { "name": "Candy", "name_km": "ស្ករគ្រាប់", "price": 500, "icon": "🍬" } ] },
+    { "name": "Instant noodles", "name_km": "មីកញ្ចប់", "color": "#c2410c", "icon": "🍜", "items": [
+      { "name": "Instant noodles (pack)", "name_km": "មីកញ្ចប់", "price": 1000, "icon": "🍜" },
+      { "name": "Cup noodles", "name_km": "មីកែវ", "price": 2500, "icon": "🍜" } ] },
+    { "name": "Groceries", "name_km": "គ្រឿងទេស", "color": "#15803d", "icon": "🧂", "items": [
+      { "name": "Rice 1kg", "name_km": "អង្ករ ១គីឡូ", "price": 4000, "icon": "🍚" },
+      { "name": "Egg (each)", "name_km": "ពងមាន់ (មួយ)", "price": 600, "icon": "🥚" },
+      { "name": "Cooking oil 1L", "name_km": "ប្រេងឆា ១លីត្រ", "price": 7000, "icon": "🫗" },
+      { "name": "Fish sauce", "name_km": "ទឹកត្រី", "price": 4000, "icon": "🐟" },
+      { "name": "Sugar 1kg", "name_km": "ស្ករស ១គីឡូ", "price": 4500, "icon": "🧂" } ] },
+    { "name": "Household & care", "name_km": "របស់ប្រើប្រាស់ និងអនាម័យ", "color": "#7c3aed", "icon": "🧴", "items": [
+      { "name": "Soap", "name_km": "សាប៊ូដុំ", "price": 2500, "icon": "🧼" },
+      { "name": "Shampoo sachet", "name_km": "សាប៊ូកក់សក់ (កញ្ចប់)", "price": 500, "icon": "🧴" },
+      { "name": "Toothpaste", "name_km": "ថ្នាំដុសធ្មេញ", "price": 4000, "icon": "🪥" },
+      { "name": "Tissue", "name_km": "ក្រដាសអនាម័យ", "price": 3000, "icon": "🧻" },
+      { "name": "Washing powder", "name_km": "ម្សៅសាប៊ូ", "price": 5000, "icon": "🧺" } ] }
+  ]
+}

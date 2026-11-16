@@ -1,0 +1,126 @@
+---
+import { tr } from '../core/i18n/static'
+import type { Lang } from '../core/i18n'
+
+interface Props {
+  lang: Lang
+}
+const { lang } = Astro.props
+const t = (k: string) => tr(lang, k)
+const other: Lang = lang === 'km' ? 'en' : 'km'
+const otherHref = other === 'en' ? '/en/' : '/'
+
+const tools = [
+  { key: 'pos', icon: 'pi-shopping-cart', href: '/pos/', ready: true },
+  { key: 'finance', icon: 'pi-calculator', href: '/finance/', ready: true },
+  { key: 'income', icon: 'pi-wallet', href: '/money/', ready: true },
+  { key: 'crm', icon: 'pi-users', ready: false },
+  { key: 'calc', icon: 'pi-percentage', ready: false },
+  { key: 'tongtin', icon: 'pi-sync', ready: false },
+]
+const why = ['offline', 'private', 'free', 'khmer']
+const whyIcon: Record<string, string> = { offline: 'pi-wifi', private: 'pi-lock', free: 'pi-gift', khmer: 'pi-language' }
+---
+
+<div class="flex min-h-dvh flex-col">
+  <header class="border-b border-[var(--k-border)] bg-[var(--k-surface)]">
+    <div class="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
+      <a href={lang === 'en' ? '/en/' : '/'} class="flex items-center gap-2 text-lg font-semibold">
+        <img src="/icons/kitroid.svg" alt="" class="size-8" />
+        Kitroid
+      </a>
+      <span class="flex-1"></span>
+      <a href={otherHref} data-lang={other} class="lang-link rounded-lg px-3 py-1.5 text-sm hover:bg-[var(--k-border)]/50">
+        <i class="pi pi-language mr-1"></i>{t('common.language')}
+      </a>
+    </div>
+  </header>
+
+  <main class="flex-1">
+    <section class="mx-auto max-w-6xl px-4 py-14 md:py-20">
+      <h1 class="max-w-3xl text-3xl leading-snug font-bold md:text-5xl md:leading-tight">{t('landing.hero')}</h1>
+      <p class="mt-4 max-w-2xl text-lg text-[var(--k-muted)]">{t('landing.heroSub')}</p>
+      <a
+        href="/pos/"
+        class="mt-8 inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 font-semibold text-white shadow-sm hover:bg-emerald-700"
+      >
+        <i class="pi pi-shopping-cart"></i>{t('landing.cta')}
+      </a>
+    </section>
+
+    <section class="mx-auto max-w-6xl px-4 pb-14">
+      <h2 class="mb-5 text-xl font-semibold">{t('landing.toolsTitle')}</h2>
+      <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {
+          tools.map((tool) => (
+            <li class="flex flex-col rounded-2xl border border-[var(--k-border)] bg-[var(--k-surface)] p-5">
+              <div class="mb-3 flex items-center gap-3">
+                <span class="grid size-10 place-items-center rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+                  <i class={`pi ${tool.icon}`} />
+                </span>
+                <h3 class="flex-1 font-semibold">{t(`landing.tools.${tool.key}`)}</h3>
+                <span
+                  class:list={[
+                    'rounded-full px-2 py-0.5 text-xs',
+                    tool.ready
+                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200'
+                      : 'bg-[var(--k-border)] text-[var(--k-muted)]',
+                  ]}
+                >
+                  {tool.ready ? t('landing.available') : t('common.comingSoon')}
+                </span>
+              </div>
+              <p class="flex-1 text-sm text-[var(--k-muted)]">{t(`landing.tools.${tool.key}Body`)}</p>
+              {tool.ready && tool.href && (
+                <a href={tool.href} class="mt-4 inline-flex items-center gap-1 font-semibold text-emerald-700 hover:underline dark:text-emerald-400">
+                  {t('landing.open')} <i class="pi pi-arrow-right text-xs" />
+                </a>
+              )}
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section class="border-t border-[var(--k-border)] bg-[var(--k-surface)]">
+      <div class="mx-auto max-w-6xl px-4 py-14">
+        <h2 class="mb-6 text-xl font-semibold">{t('landing.whyTitle')}</h2>
+        <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {
+            why.map((w) => (
+              <li>
+                <i class={`pi ${whyIcon[w]} mb-2 text-xl text-emerald-600`} />
+                <h3 class="font-semibold">{t(`landing.why.${w}`)}</h3>
+                <p class="text-sm text-[var(--k-muted)]">{t(`landing.why.${w}Body`)}</p>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-[var(--k-border)]">
+    <div class="mx-auto max-w-6xl px-4 py-6 text-sm text-[var(--k-muted)]">
+      <p>{t('landing.footer')}</p>
+      <p class="mt-1">
+        © {new Date().getFullYear()} Kitroid ·
+        <a href="/privacy/" class="underline">Privacy</a> ·
+        <a href="/terms/" class="underline">Terms</a>
+      </p>
+    </div>
+  </footer>
+</div>
+
+<script>
+  import { prefs } from '../core/util/prefs'
+  import { initPwa } from '../core/pwa/update'
+
+  // Remember the language the visitor picks; tools use the same preference.
+  document.querySelectorAll<HTMLAnchorElement>('a.lang-link').forEach((a) =>
+    a.addEventListener('click', () => prefs.set('lang', a.dataset.lang || 'km')),
+  )
+  // Install the service worker from the landing page too, so the tools are cached
+  // for offline use as soon as someone visits kitroid.com.
+  initPwa()
+</script>

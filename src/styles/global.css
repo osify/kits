@@ -1,0 +1,73 @@
+/* Layer order: PrimeVue's theme sits between Tailwind's base and utilities,
+   so Tailwind utility classes can always override PrimeVue component styles. */
+@layer theme, base, primevue, components, utilities;
+
+@import 'tailwindcss';
+@import 'tailwindcss-primeui';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Kantumruy Pro covers both Khmer and Latin; it is self-hosted (bundled) so it
+     works offline. Printed/official documents use Khmer OS Siemreap / Muol Light. */
+  --font-sans: 'Kantumruy Pro Variable', ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  :root {
+    --k-bg: #f6f7f5;
+    --k-surface: #ffffff;
+    --k-text: #1c2321;
+    --k-muted: #5b6662;
+    --k-border: #dfe4e1;
+    color-scheme: light;
+  }
+  .dark {
+    --k-bg: #0f1412;
+    --k-surface: #171e1b;
+    --k-text: #e8eeeb;
+    --k-muted: #9aa7a2;
+    --k-border: #2a3430;
+    color-scheme: dark;
+  }
+  html {
+    font-family: var(--font-sans);
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background: var(--k-bg);
+    color: var(--k-text);
+    min-height: 100dvh;
+    /* Khmer stacks vowels and subscripts above and below the line, so it needs a taller line-height. */
+    line-height: 1.7;
+  }
+}
+
+/* Printing a tool page: hide navigation and controls marked .no-print, print on white. */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+}
+
+/* Tabs and steppers sit directly on the page: no grey strip behind the tab bar, and the
+   panel content starts with consistent space below it (PrimeVue defaults assume a card). */
+@layer components {
+  .p-tablist,
+  .p-tablist-tab-list,
+  .p-tabpanels,
+  .p-steppanels,
+  .p-steplist {
+    background: transparent !important;
+  }
+  .p-tabpanels {
+    padding: 1.25rem 0 0 !important;
+  }
+  .p-steppanels {
+    padding: 1rem 0 0 !important;
+  }
+}

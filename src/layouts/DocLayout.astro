@@ -1,0 +1,49 @@
+---
+import BaseLayout from './BaseLayout.astro'
+
+interface Props {
+  title: string
+  description: string
+}
+const { title, description } = Astro.props
+---
+
+<BaseLayout title={`${title} · Kitroid`} description={description} lang="en">
+  <header class="border-b border-[var(--k-border)] bg-[var(--k-surface)]">
+    <div class="mx-auto flex max-w-3xl items-center gap-2 px-4 py-3">
+      <a href="/" class="flex items-center gap-2 text-lg font-semibold"><img src="/icons/kitroid.svg" alt="" class="size-8" />Kitroid</a>
+    </div>
+  </header>
+  <main class="doc mx-auto max-w-3xl px-4 py-10">
+    <slot />
+  </main>
+</BaseLayout>
+
+<style is:global>
+  .doc h1 {
+    font-size: 1.875rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+  .doc h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 2rem 0 0.5rem;
+  }
+  .doc p,
+  .doc li {
+    color: var(--k-text);
+    margin: 0.5rem 0;
+  }
+  .doc ul {
+    list-style: disc;
+    padding-left: 1.25rem;
+  }
+  .doc .muted {
+    color: var(--k-muted);
+  }
+  .doc a {
+    color: #059669;
+    text-decoration: underline;
+  }
+</style>

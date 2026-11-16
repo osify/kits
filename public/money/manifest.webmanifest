@@ -1,0 +1,20 @@
+{
+  "id": "/money/",
+  "name": "Kitroid Income & Expense",
+  "short_name": "Kitroid Money",
+  "description": "Record money in and out, see monthly profit. Works offline; data stays on your device.",
+  "lang": "km",
+  "start_url": "/money/",
+  "scope": "/money/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f6f7f5",
+  "theme_color": "#059669",
+  "categories": ["finance", "business", "productivity"],
+  "icons": [
+    { "src": "/icons/kitroid.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "/icons/pwa-192x192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/pwa-512x512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icons/maskable-icon-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

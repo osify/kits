@@ -1,0 +1,22 @@
+{
+  "id": "buns",
+  "currency": "KHR",
+  "categories": [
+    { "name": "Steamed buns", "name_km": "នំប៉ាវ", "color": "#b45309", "icon": "🥟", "items": [
+      { "name": "Pork bun", "name_km": "នំប៉ាវសាច់ជ្រូក", "price": 3000, "icon": "🥟" },
+      { "name": "Chicken bun", "name_km": "នំប៉ាវសាច់មាន់", "price": 3000, "icon": "🥟" },
+      { "name": "Custard bun", "name_km": "នំប៉ាវក្រែម", "price": 2500, "icon": "🥟" },
+      { "name": "Red bean bun", "name_km": "នំប៉ាវសណ្តែកក្រហម", "price": 2500, "icon": "🥟" },
+      { "name": "Pandan bun", "name_km": "នំប៉ាវស្លឹកតើយ", "price": 3000, "icon": "🥟" },
+      { "name": "Character bun", "name_km": "នំប៉ាវរូបសត្វ", "price": 4000, "icon": "🐻" },
+      { "name": "Salted egg bun", "name_km": "នំប៉ាវពងទាប្រៃ", "price": 3500, "icon": "🥟" } ] },
+    { "name": "Bakery", "name_km": "នំផ្សេងៗ", "color": "#a16207", "icon": "🍞", "items": [
+      { "name": "Num pang (baguette)", "name_km": "នំបុ័ង", "price": 1000, "icon": "🥖" },
+      { "name": "Sweet bread", "name_km": "នំបុ័ងផ្អែម", "price": 1500, "icon": "🍞" },
+      { "name": "Sponge cake", "name_km": "នំខេក", "price": 2000, "icon": "🍰" } ] },
+    { "name": "Drinks", "name_km": "ភេសជ្ជៈ", "color": "#0e7490", "icon": "🥤", "items": [
+      { "name": "Soy milk", "name_km": "ទឹកសណ្តែក", "price": 2000, "icon": "🥛" },
+      { "name": "Bottled water", "name_km": "ទឹកសុទ្ធ", "price": 1000, "icon": "💧" },
+      { "name": "Soft drink (can)", "name_km": "ភេសជ្ជៈកំប៉ុង", "price": 2500, "icon": "🥤" } ] }
+  ]
+}

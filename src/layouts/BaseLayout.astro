@@ -1,0 +1,58 @@
+---
+import '@fontsource-variable/kantumruy-pro'
+import 'primeicons/primeicons.css'
+import '../styles/global.css'
+
+interface Props {
+  title: string
+  description: string
+  lang?: 'km' | 'en'
+  /** Per-tool PWA manifest, e.g. /pos/manifest.webmanifest */
+  manifest?: string
+  /** Alternate-language URLs for SEO */
+  alternates?: { km: string; en: string }
+}
+
+const { title, description, lang = 'km', manifest = '/manifest.webmanifest', alternates } = Astro.props
+const canonical = new URL(Astro.url.pathname, Astro.site)
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {
+      alternates && (
+        <>
+          <link rel="alternate" hreflang="km" href={new URL(alternates.km, Astro.site)} />
+          <link rel="alternate" hreflang="en" href={new URL(alternates.en, Astro.site)} />
+          <link rel="alternate" hreflang="x-default" href={new URL(alternates.km, Astro.site)} />
+        </>
+      )
+    }
+    <meta name="theme-color" content="#059669" />
+    <link rel="icon" href="/icons/kitroid.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon-180x180.png" />
+    <link rel="manifest" href={manifest} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <script is:inline>
+      // Dark mode follows the device setting; applied before paint to avoid a flash.
+      try {
+        var m = window.matchMedia('(prefers-color-scheme: dark)')
+        var apply = function () { document.documentElement.classList.toggle('dark', m.matches) }
+        apply()
+        m.addEventListener('change', apply)
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

@@ -1,0 +1,13 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import { tr } from '../../core/i18n/static'
+---
+
+<BaseLayout title="Kitroid Income & Expense" description={tr('en', 'landing.tools.incomeBody')} manifest="/money/manifest.webmanifest">
+  <!-- Client-only Vue app: the book lives in this device's SQLite database. -->
+  <div id="money-app"></div>
+  <noscript>Kitroid needs JavaScript. / Kitroid ត្រូវការ JavaScript។</noscript>
+  <script>
+    import '../../tools/money/main'
+  </script>
+</BaseLayout>

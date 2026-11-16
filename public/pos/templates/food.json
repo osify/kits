@@ -1,0 +1,32 @@
+{
+  "id": "food",
+  "currency": "KHR",
+  "modifiers": [
+    { "key": "size", "name": "Portion", "name_km": "ទំហំចាន", "min": 0, "max": 1, "options": [
+      { "name": "Regular", "name_km": "ធម្មតា", "price": 0 },
+      { "name": "Large", "name_km": "ពិសេស", "price": 2000 } ] },
+    { "key": "addon", "name": "Add-ons", "name_km": "បន្ថែម", "min": 0, "max": 3, "options": [
+      { "name": "Fried egg", "name_km": "ពងមាន់ចៀន", "price": 1000 },
+      { "name": "Extra meat", "name_km": "បន្ថែមសាច់", "price": 2000 },
+      { "name": "Extra rice", "name_km": "បាយបន្ថែម", "price": 1000 } ] },
+    { "key": "spicy", "name": "Spicy", "name_km": "ហឹរ", "min": 0, "max": 1, "options": [
+      { "name": "Not spicy", "name_km": "មិនហឹរ", "price": 0 },
+      { "name": "Spicy", "name_km": "ហឹរ", "price": 0 } ] }
+  ],
+  "categories": [
+    { "name": "Rice dishes", "name_km": "ម្ហូបបាយ", "color": "#b91c1c", "icon": "🍚", "items": [
+      { "name": "Bai sach chrouk", "name_km": "បាយសាច់ជ្រូក", "price": 6000, "icon": "🍚", "modifiers": ["size", "addon"] },
+      { "name": "Fried rice", "name_km": "បាយឆា", "price": 6000, "icon": "🍳", "modifiers": ["size", "addon", "spicy"] },
+      { "name": "Lok lak", "name_km": "ឡុកឡាក់", "price": 12000, "icon": "🥩", "modifiers": ["addon"] },
+      { "name": "Chicken rice", "name_km": "បាយមាន់", "price": 7000, "icon": "🍗", "modifiers": ["size", "addon"] } ] },
+    { "name": "Noodles", "name_km": "មី និងគុយទាវ", "color": "#c2410c", "icon": "🍜", "items": [
+      { "name": "Kuy teav", "name_km": "គុយទាវ", "price": 7000, "icon": "🍜", "modifiers": ["size", "addon", "spicy"] },
+      { "name": "Fried noodles", "name_km": "មីឆា", "price": 6000, "icon": "🍝", "modifiers": ["size", "addon", "spicy"] },
+      { "name": "Num banh chok", "name_km": "នំបញ្ចុក", "price": 4000, "icon": "🍜", "modifiers": ["size"] } ] },
+    { "name": "Drinks", "name_km": "ភេសជ្ជៈ", "color": "#0e7490", "icon": "🥤", "items": [
+      { "name": "Iced tea", "name_km": "តែទឹកកក", "price": 500, "icon": "🧋" },
+      { "name": "Sugarcane juice", "name_km": "ទឹកអំពៅ", "price": 2000, "icon": "🥤" },
+      { "name": "Soft drink (can)", "name_km": "ភេសជ្ជៈកំប៉ុង", "price": 2500, "icon": "🥤" },
+      { "name": "Bottled water", "name_km": "ទឹកសុទ្ធ", "price": 1000, "icon": "💧" } ] }
+  ]
+}

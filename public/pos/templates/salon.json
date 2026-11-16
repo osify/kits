@@ -1,0 +1,19 @@
+{
+  "id": "salon",
+  "currency": "KHR",
+  "categories": [
+    { "name": "Hair", "name_km": "សក់", "color": "#7c3aed", "icon": "💇", "items": [
+      { "name": "Haircut (men)", "name_km": "កាត់សក់ (បុរស)", "price": 10000, "icon": "💈" },
+      { "name": "Haircut (women)", "name_km": "កាត់សក់ (នារី)", "price": 15000, "icon": "💇" },
+      { "name": "Hair wash", "name_km": "កក់សក់", "price": 5000, "icon": "🚿" },
+      { "name": "Hair colour", "name_km": "លាបពណ៌សក់", "price": 40000, "icon": "🎨" },
+      { "name": "Shave", "name_km": "កោរពុកមាត់", "price": 5000, "icon": "🪒" } ] },
+    { "name": "Nails & beauty", "name_km": "ក្រចក និងសម្ផស្ស", "color": "#db2777", "icon": "💅", "items": [
+      { "name": "Manicure", "name_km": "ធ្វើក្រចកដៃ", "price": 15000, "icon": "💅" },
+      { "name": "Pedicure", "name_km": "ធ្វើក្រចកជើង", "price": 15000, "icon": "🦶" },
+      { "name": "Facial", "name_km": "ថែស្បែកមុខ", "price": 30000, "icon": "🧖" } ] },
+    { "name": "Products", "name_km": "ផលិតផល", "color": "#0e7490", "icon": "🧴", "items": [
+      { "name": "Shampoo", "name_km": "សាប៊ូកក់សក់", "price": 20000, "icon": "🧴" },
+      { "name": "Hair wax", "name_km": "ក្រែមលាបសក់", "price": 15000, "icon": "🫙" } ] }
+  ]
+}

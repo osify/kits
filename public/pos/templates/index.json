@@ -1,0 +1,7 @@
+[
+  { "id": "cafe", "icon": "☕", "name": "Café & drinks", "name_km": "ហាងកាហ្វេ និងភេសជ្ជៈ", "description": "Hot and iced coffee, matcha, sodas and snacks, with size, sugar and ice options.", "description_km": "កាហ្វេក្តៅ និងទឹកកក ម៉ាចា សូដា និងអាហារសម្រន់ មានជម្រើសទំហំ ស្ករ និងទឹកកក។" },
+  { "id": "buns", "icon": "🥟", "name": "Steamed buns & bakery", "name_km": "នំប៉ាវ និងនំ", "description": "Num pao (meat, custard, character buns), bakery items and drinks.", "description_km": "នំប៉ាវ (សាច់ ក្រែម រូបសត្វ) នំផ្សេងៗ និងភេសជ្ជៈ។" },
+  { "id": "food", "icon": "🍜", "name": "Rice & noodle shop", "name_km": "ហាងបាយ និងគុយទាវ", "description": "Bai sach chrouk, kuy teav, fried rice and noodles, add-ons and drinks.", "description_km": "បាយសាច់ជ្រូក គុយទាវ បាយឆា មីឆា ម្ហូបបន្ថែម និងភេសជ្ជៈ។" },
+  { "id": "minimart", "icon": "🛒", "name": "Mini-mart / grocery", "name_km": "ម៉ាតតូច / ហាងលក់គ្រឿងទេស", "description": "Drinks, snacks, instant noodles, groceries and household items.", "description_km": "ភេសជ្ជៈ នំចំណី មីកញ្ចប់ គ្រឿងទេស និងរបស់ប្រើប្រាស់ក្នុងផ្ទះ។" },
+  { "id": "salon", "icon": "💇", "name": "Salon & barber", "name_km": "ហាងកាត់សក់ និងសម្អាងការ", "description": "Haircuts, hair wash, colour, nails: services instead of products.", "description_km": "កាត់សក់ កក់សក់ លាបពណ៌ ធ្វើក្រចក៖ សេវាកម្មជំនួសឲ្យទំនិញ។" }
+]

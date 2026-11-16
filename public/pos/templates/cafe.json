@@ -1,0 +1,46 @@
+{
+  "id": "cafe",
+  "currency": "KHR",
+  "modifiers": [
+    { "key": "size", "name": "Size", "name_km": "ទំហំ", "min": 0, "max": 1, "options": [
+      { "name": "Medium", "name_km": "មធ្យម", "price": 0 },
+      { "name": "Large", "name_km": "ធំ", "price": 1000 } ] },
+    { "key": "sugar", "name": "Sugar", "name_km": "ស្ករ", "min": 0, "max": 1, "options": [
+      { "name": "No sugar", "name_km": "គ្មានស្ករ", "price": 0 },
+      { "name": "Less sugar 50%", "name_km": "ស្ករតិច ៥០%", "price": 0 },
+      { "name": "Normal sugar", "name_km": "ស្ករធម្មតា", "price": 0 },
+      { "name": "Extra sugar", "name_km": "ស្ករច្រើន", "price": 0 } ] },
+    { "key": "ice", "name": "Ice", "name_km": "ទឹកកក", "min": 0, "max": 1, "options": [
+      { "name": "Less ice", "name_km": "ទឹកកកតិច", "price": 0 },
+      { "name": "Normal ice", "name_km": "ទឹកកកធម្មតា", "price": 0 },
+      { "name": "No ice", "name_km": "គ្មានទឹកកក", "price": 0 } ] },
+    { "key": "extra", "name": "Extras", "name_km": "បន្ថែម", "min": 0, "max": 3, "options": [
+      { "name": "Extra shot", "name_km": "បន្ថែមកាហ្វេ", "price": 1000 },
+      { "name": "Whipped cream", "name_km": "ក្រែម", "price": 1000 },
+      { "name": "Oat milk", "name_km": "ទឹកដោះស្រូវសាលី", "price": 2000 } ] }
+  ],
+  "categories": [
+    { "name": "Hot coffee", "name_km": "កាហ្វេក្តៅ", "color": "#b45309", "icon": "☕", "items": [
+      { "name": "Espresso", "name_km": "អេសប្រេសូ", "price": 3000, "icon": "☕", "modifiers": ["sugar", "extra"] },
+      { "name": "Americano", "name_km": "អាមេរិកាណូ", "price": 4000, "icon": "☕", "modifiers": ["size", "sugar", "extra"] },
+      { "name": "Latte", "name_km": "ឡាតេ", "price": 5000, "icon": "☕", "modifiers": ["size", "sugar", "extra"] },
+      { "name": "Cappuccino", "name_km": "កាពូឈីណូ", "price": 5000, "icon": "☕", "modifiers": ["size", "sugar", "extra"] } ] },
+    { "name": "Iced coffee", "name_km": "កាហ្វេទឹកកក", "color": "#0e7490", "icon": "🧊", "items": [
+      { "name": "Iced coffee with milk", "name_km": "កាហ្វេទឹកដោះគោទឹកកក", "price": 5000, "icon": "🥤", "modifiers": ["size", "sugar", "ice", "extra"] },
+      { "name": "Iced black coffee", "name_km": "កាហ្វេខ្មៅទឹកកក", "price": 4000, "icon": "🥤", "modifiers": ["size", "sugar", "ice", "extra"] },
+      { "name": "Iced latte", "name_km": "ឡាតេទឹកកក", "price": 6000, "icon": "🥤", "modifiers": ["size", "sugar", "ice", "extra"] } ] },
+    { "name": "Matcha", "name_km": "ម៉ាចា", "color": "#15803d", "icon": "🍵", "items": [
+      { "name": "Matcha latte", "name_km": "ម៉ាចាឡាតេ", "price": 6000, "icon": "🍵", "modifiers": ["size", "sugar", "ice", "extra"] },
+      { "name": "Strawberry matcha latte", "name_km": "ម៉ាចាឡាតេស្ត្របឺរី", "price": 7000, "icon": "🍓", "modifiers": ["size", "sugar", "ice"] },
+      { "name": "Matcha latte cream", "name_km": "ម៉ាចាឡាតេក្រែម", "price": 7000, "icon": "🍵", "modifiers": ["size", "sugar", "ice"] } ] },
+    { "name": "Soda & mixes", "name_km": "សូដា និងភេសជ្ជៈលាយ", "color": "#7c3aed", "icon": "🍹", "items": [
+      { "name": "Passion soda", "name_km": "សូដាផាសិន", "price": 4000, "icon": "🍹", "modifiers": ["size", "sugar", "ice"] },
+      { "name": "Passion milk", "name_km": "ទឹកដោះគោផាសិន", "price": 4000, "icon": "🥛", "modifiers": ["size", "sugar", "ice"] },
+      { "name": "Lemon tea", "name_km": "តែក្រូចឆ្មា", "price": 3000, "icon": "🍋", "modifiers": ["size", "sugar", "ice"] } ] },
+    { "name": "Snacks", "name_km": "អាហារសម្រន់", "color": "#be123c", "icon": "🥐", "items": [
+      { "name": "Steamed bun", "name_km": "នំប៉ាវ", "price": 3000, "icon": "🥟" },
+      { "name": "Boiled egg", "name_km": "ពងមាន់ស្ងោរ", "price": 1000, "icon": "🥚" },
+      { "name": "Banana", "name_km": "ចេក", "price": 500, "icon": "🍌" },
+      { "name": "Croissant", "name_km": "នំក្រូស្សង់", "price": 4000, "icon": "🥐" } ] }
+  ]
+}

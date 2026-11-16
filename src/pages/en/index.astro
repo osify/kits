@@ -1,0 +1,9 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import Landing from '../../components/Landing.astro'
+import { tr } from '../../core/i18n/static'
+---
+
+<BaseLayout lang="en" title={tr('en', 'landing.title')} description={tr('en', 'landing.description')} alternates={{ km: '/', en: '/en/' }}>
+  <Landing lang="en" />
+</BaseLayout>

@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.astro/
+dev-dist/
+*.log
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+
+# License signing key (never commit)
+.license/
+*.jwk
