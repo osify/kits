@@ -173,3 +173,73 @@ export function simulate(hands: number, amount: number, bids: number[], headFirs
     return { position: i + 1, bid: rounds[i].bid, receives, pays, gain, ratePerRound: rate }
   })
 }
+
+// ── Spreadsheet view: hands × rounds ─────────────────────────────────────────
+
+export type SheetCell = { kind: 'won'; amount: number } | { kind: 'pay'; amount: number; paid: boolean } | { kind: 'none' }
+export interface SheetRound {
+  no: number
+  date: string
+  winner_id: string
+  bid: number
+  pot: number
+  collected: number
+  id?: string
+}
+export interface SheetRow {
+  id: string
+  name: string
+  cells: SheetCell[] // one per round, in order
+  paid: number
+  owing: number
+  received: number
+  net: number
+}
+
+/** Every hand's share in every round so far, plus totals per hand and per round. */
+export function sheet(c: CircleLike, members: MemberLike[], rounds: (RoundLike & { id?: string; date: string })[], payments: PaymentLike[]) {
+  const sorted = [...rounds].sort((a, b) => a.no - b.no)
+  const paidSet = new Set(payments.map((p) => `${p.round_no}:${p.member_id}`))
+  const cols: SheetRound[] = []
+  const cellsBy = new Map<string, SheetCell[]>(members.map((m) => [m.id, []]))
+  for (const r of sorted) {
+    const d = dues(c, members, rounds, r.no, r.winner_id, r.bid)
+    let collected = 0
+    for (const m of members) {
+      const cells = cellsBy.get(m.id)!
+      if (m.id === r.winner_id) cells.push({ kind: 'won', amount: potOf(d) })
+      else if (d.has(m.id)) {
+        const paid = paidSet.has(`${r.no}:${m.id}`)
+        if (paid) collected += d.get(m.id)!
+        cells.push({ kind: 'pay', amount: d.get(m.id)!, paid })
+      } else cells.push({ kind: 'none' })
+    }
+    cols.push({ no: r.no, date: r.date, winner_id: r.winner_id, bid: r.bid, pot: potOf(d), collected, id: r.id })
+  }
+  const sums = new Map(summary(c, members, rounds, payments).map((s) => [s.id, s]))
+  const rows: SheetRow[] = members.map((m) => {
+    const s = sums.get(m.id)!
+    return { id: m.id, name: m.name, cells: cellsBy.get(m.id)!, paid: s.paid, owing: s.owing, received: s.received, net: s.net }
+  })
+  return { rounds: cols, rows }
+}
+
+/** CSV for Excel: one row per hand, one column per round (unpaid shares marked), totals at the end. */
+export function sheetCsv(s: ReturnType<typeof sheet>, currency: 'KHR' | 'USD', labels: { hand: string; round: string; paid: string; owing: string; received: string; net: string; won: string; unpaid: string; pot: string; bid: string }) {
+  const num = (v: number) => (currency === 'KHR' ? String(v) : (v / 100).toFixed(2))
+  const q = (v: string) => (/[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v)
+  const lines: string[][] = []
+  lines.push([labels.hand, ...s.rounds.map((r) => `${labels.round} ${r.no} (${r.date})`), labels.paid, labels.owing, labels.received, labels.net])
+  for (const r of s.rows)
+    lines.push([
+      r.name,
+      ...r.cells.map((c) => (c.kind === 'won' ? `${labels.won} ${num(c.amount)}` : c.kind === 'pay' ? (c.paid ? num(c.amount) : `${num(c.amount)} ${labels.unpaid}`) : '')),
+      num(r.paid),
+      num(Math.max(0, r.owing)),
+      num(r.received),
+      num(r.net),
+    ])
+  lines.push([labels.bid, ...s.rounds.map((r) => num(r.bid)), '', '', '', ''])
+  lines.push([labels.pot, ...s.rounds.map((r) => num(r.pot)), '', '', '', ''])
+  return '\ufeff' + lines.map((l) => l.map(q).join(',')).join('\r\n') + '\r\n'
+}

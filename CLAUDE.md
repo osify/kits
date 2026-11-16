@@ -19,7 +19,7 @@ Users run the tools at their own risk; Kitroid never receives their data.
 | `/crm/` | Customers: contacts (phone, Telegram, tags, birthday), follow-ups with today/overdue list, activity log, debts per currency, CSV import/export, backups | done (own DB `crm`, `src/tools/crm/`) |
 | `/calc/` | Useful calculators: change in ៛/$, cash-drawer count, VAT, discount, unit price | done (stateless, `src/tools/calc/`) |
 | `/finance/` | Financial calculator: loan (annuity / equal principal / flat, true cost incl. fees, schedule, CSV, print), savings, price & profit, break-even, **Salary & NSSF** (GDT Tax on Salary, allowances, FBT, NSSF by month, payslip), **Withholding tax** | done (stateless). **Tax/NSSF rates live in `src/tools/finance/rates.ts` with `CHECKED` date + sources: update there when the law changes** |
-| `/tongtin/` | Tong Tin (savings circle): circles with hands, bid or fixed-order rounds, head takes round 1, who paid per round, per-hand totals, planner with each turn's gain/cost and rate per round, backups | done (own DB `tongtin`, `src/tools/tongtin/`; rules in `rules.ts`) |
+| `/tongtin/` | Tong Tin (savings circle): each round = 1) winner + final winning bid (bidding happens in person), 2) tick who paid their share, 3) pot given → close round. Excel-like table (hands × rounds, tap to mark paid, CSV), per-hand totals, planner, backups | done (own DB `tongtin`, `src/tools/tongtin/`; rules in `rules.ts`) |
 
 This is **not** POS-52. POS-52 (`U:\BP\POS-52`, the server-based system used by LomOr & Co) is the
 reference for business logic: Quick Sale (`frontends/admin-portal/src/views/sales/QuickSaleView.vue`),

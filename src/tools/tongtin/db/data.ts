@@ -37,6 +37,7 @@ export interface Round {
   winner_id: string
   bid: number
   note: string | null
+  closed_at: number | null
 }
 export interface Payment {
   id: string
@@ -51,6 +52,7 @@ export interface CircleRow extends Circle {
   drawn: number // rounds drawn so far
   next_date: string | null
   unpaid: number // shares not yet paid in drawn rounds
+  open_no: number | null // round being collected (winner confirmed, not closed yet)
 }
 export interface CircleDetail {
   circle: Circle
@@ -115,8 +117,9 @@ export async function saveCircle(db: DbLike, c: CircleInput, memberNames: string
 }
 
 export async function listCircles(db: DbLike): Promise<CircleRow[]> {
-  const rows = await db.query<Circle & { hands: number; drawn: number; paid: number; shares: number }>(
+  const rows = await db.query<Circle & { hands: number; drawn: number; paid: number; open_no: number | null }>(
     `SELECT c.*,
+       (SELECT MAX(r.no) FROM round r WHERE r.circle_id = c.id AND r.closed_at IS NULL) AS open_no,
        (SELECT COUNT(*) FROM member m WHERE m.circle_id = c.id) AS hands,
        (SELECT COUNT(*) FROM round r WHERE r.circle_id = c.id) AS drawn,
        (SELECT COUNT(*) FROM payment p JOIN round r ON r.id = p.round_id WHERE r.circle_id = c.id) AS paid
@@ -126,7 +129,8 @@ export async function listCircles(db: DbLike): Promise<CircleRow[]> {
     const finished = r.drawn >= r.hands
     // every drawn round has (hands − 1) shares to pay
     const unpaid = Math.max(0, r.drawn * (r.hands - 1) - r.paid)
-    return { ...r, next_date: finished || r.closed_at ? null : roundDate(r.start_date, r.every, r.drawn + 1), unpaid }
+    const next = r.open_no ?? (finished ? null : r.drawn + 1)
+    return { ...r, next_date: next === null || r.closed_at ? null : roundDate(r.start_date, r.every, next), unpaid }
   })
 }
 
@@ -135,7 +139,7 @@ export async function getDetail(db: DbLike, id: string): Promise<CircleDetail | 
   if (!circle) return null
   const [members, rounds, payments] = await Promise.all([
     db.query<Member>(`SELECT id, circle_id, name, phone, note, sort FROM member WHERE circle_id = ? ORDER BY sort, created_at`, [id]),
-    db.query<Round>(`SELECT id, circle_id, no, date, winner_id, bid, note FROM round WHERE circle_id = ? ORDER BY no`, [id]),
+    db.query<Round>(`SELECT id, circle_id, no, date, winner_id, bid, note, closed_at FROM round WHERE circle_id = ? ORDER BY no`, [id]),
     db.query<Payment>(
       `SELECT p.id, p.round_id, r.no AS round_no, p.member_id, p.amount, p.paid_at FROM payment p JOIN round r ON r.id = p.round_id WHERE r.circle_id = ?`,
       [id],
@@ -225,6 +229,12 @@ export async function saveRound(db: DbLike, r: { circle_id: string; no: number; 
   ])
   await touch(db, r.circle_id)
   return id
+}
+
+/** Close a round (pot handed to the winner) or reopen it. Late payments can still be ticked after closing. */
+export async function closeRound(db: DbLike, roundId: string, closed: boolean) {
+  const t = now()
+  await db.run(`UPDATE round SET closed_at = ?, updated_at = ? WHERE id = ?`, [closed ? t : null, t, roundId])
 }
 
 /** Only the last round can be undone (later rounds depend on who already took the pot). */

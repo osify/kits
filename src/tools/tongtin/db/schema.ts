@@ -68,4 +68,15 @@ CREATE TABLE payment (
 );
 `,
   },
+  {
+    version: 2,
+    description: 'Round close step',
+    sql: `
+ALTER TABLE round ADD COLUMN closed_at INTEGER;
+-- Rounds recorded before v2: all but the newest of each circle count as closed.
+UPDATE round SET closed_at = updated_at
+  WHERE no < (SELECT MAX(r2.no) FROM round r2 WHERE r2.circle_id = round.circle_id);
+
+`,
+  },
 ]

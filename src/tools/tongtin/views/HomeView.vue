@@ -39,7 +39,7 @@ const todayStr = today()
           <div class="flex items-start gap-2">
             <h2 class="min-w-0 flex-1 truncate font-semibold">{{ c.name }}</h2>
             <Tag v-if="c.closed_at" severity="secondary" :value="t('tt.closed')" />
-            <Tag v-else-if="c.drawn >= c.hands && c.hands" severity="success" :value="t('tt.finished')" />
+             <Tag v-else-if="c.drawn >= c.hands && c.hands && !c.open_no" severity="success" :value="t('tt.finished')" />
             <Tag v-else-if="c.unpaid" severity="warn" :value="t('tt.unpaidShares', { n: c.unpaid })" />
           </div>
           <p class="text-sm text-[var(--k-muted)]">
@@ -49,7 +49,11 @@ const todayStr = today()
             <div class="h-full rounded-full bg-primary-600" :style="{ width: `${c.hands ? (c.drawn / c.hands) * 100 : 0}%` }" />
           </div>
           <div class="flex justify-between text-sm">
-            <span>{{ t('tt.roundOf', { n: c.drawn, total: c.hands }) }}</span>
+            <span>
+              <template v-if="c.closed_at || (c.drawn >= c.hands && !c.open_no)">{{ t('tt.roundOf', { n: c.drawn, total: c.hands }) }}</template>
+              <b v-else-if="c.open_no">{{ t('tt.collecting', { n: c.open_no }) }}</b>
+              <template v-else>{{ t('tt.bidding', { n: c.drawn + 1 }) }}</template>
+            </span>
             <span v-if="c.next_date" :class="c.next_date <= todayStr ? 'font-semibold text-amber-700 dark:text-amber-400' : 'text-[var(--k-muted)]'">
               {{ t('tt.nextOn', { date: c.next_date }) }}
             </span>
