@@ -33,6 +33,8 @@ export default defineConfig({
           '**/sqlite3-opfs-async-proxy-*.js',
           // legacy icon-font formats; browsers use the woff2
           '**/primeicons.*.svg',
+          // link-preview image for social sites, not needed offline
+          'og-image.png',
         ],
         navigateFallback: null,
         cleanupOutdatedCaches: true,
