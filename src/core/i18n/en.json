@@ -523,6 +523,12 @@
       "cta": "Buy us a coffee",
       "member": "Monthly members get a Kitroid Pro license key: unlimited items in POS and every future Pro feature.",
       "memberCta": "Become a member"
+    },
+    "google": {
+      "title": "Backups to your own Google Drive",
+      "body": "Kitroid works without any account. If you choose \"Connect Google Drive\" in a tool's Backup screen, you sign in with your own Google account and Kitroid asks for one permission: to create backup files in your Google Drive and open only the files it created (drive.file). Backups go straight from your browser to your Drive. Kitroid has no server and never sees your files, your Google account details or your access token. You can remove access at any time in your Google account.",
+      "privacy": "Privacy policy",
+      "terms": "Terms of use"
     }
   },
   "fin": {

@@ -99,6 +99,18 @@ const whyIcon: Record<string, string> = { offline: 'pi-wifi', private: 'pi-lock'
         </ul>
       </div>
     </section>
+    <section id="google-drive" class="mx-auto max-w-6xl px-4 pt-14">
+      <div class="rounded-2xl border border-[var(--k-border)] bg-[var(--k-surface)] p-6">
+        <h2 class="mb-2 flex items-center gap-2 text-xl font-semibold"><i class="pi pi-cloud-upload text-emerald-600"></i>{t('landing.google.title')}</h2>
+        <p class="max-w-3xl text-sm text-[var(--k-muted)]">{t('landing.google.body')}</p>
+        <p class="mt-3 flex flex-wrap gap-4 text-sm font-semibold">
+          <a href="/privacy/" class="text-emerald-700 underline dark:text-emerald-400">{t('landing.google.privacy')}</a>
+          <a href="/terms/" class="text-emerald-700 underline dark:text-emerald-400">{t('landing.google.terms')}</a>
+          <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener" class="text-emerald-700 underline dark:text-emerald-400">myaccount.google.com/permissions</a>
+        </p>
+      </div>
+    </section>
+
     <section id="support" class="mx-auto max-w-6xl px-4 py-14">
       <div class="flex flex-col gap-5 rounded-2xl border border-amber-300 bg-amber-50 p-6 text-amber-950 sm:flex-row sm:items-center dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-100">
         <a href={support} target="_blank" rel="noopener" class="shrink-0 self-start rounded-xl bg-white p-1.5 shadow-sm" aria-label="Buy Me a Coffee QR code">
