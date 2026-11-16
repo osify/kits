@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SupportCard from '@/components/SupportCard.vue'
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useToast } from 'primevue/usetoast'
@@ -64,5 +65,6 @@ function restored() {
     </section>
     <h2 class="mt-2 text-lg font-semibold">{{ t('crm.nav.backup') }}</h2>
     <BackupPanel :backup="backup" drive-folder="Kitroid / Customers" @restored="restored" />
+    <SupportCard class="mt-2" />
   </div>
 </template>

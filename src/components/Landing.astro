@@ -1,6 +1,7 @@
 ---
 import { tr } from '../core/i18n/static'
 import type { Lang } from '../core/i18n'
+import { SUPPORT_URL as support, MEMBERSHIP_URL as membership } from '../core/support'
 
 interface Props {
   lang: Lang
@@ -16,7 +17,7 @@ const tools = [
   { key: 'income', icon: 'pi-wallet', href: '/money/', ready: true },
   { key: 'crm', icon: 'pi-users', href: '/crm/', ready: true },
   { key: 'calc', icon: 'pi-percentage', href: '/calc/', ready: true },
-  { key: 'tongtin', icon: 'pi-sync', ready: false },
+  { key: 'tongtin', icon: 'pi-sync', href: '/tongtin/', ready: true },
 ]
 const why = ['offline', 'private', 'free', 'khmer']
 const whyIcon: Record<string, string> = { offline: 'pi-wifi', private: 'pi-lock', free: 'pi-gift', khmer: 'pi-language' }
@@ -98,6 +99,22 @@ const whyIcon: Record<string, string> = { offline: 'pi-wifi', private: 'pi-lock'
         </ul>
       </div>
     </section>
+    <section id="support" class="mx-auto max-w-6xl px-4 py-14">
+      <div class="flex flex-col gap-5 rounded-2xl border border-amber-300 bg-amber-50 p-6 text-amber-950 sm:flex-row sm:items-center dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-100">
+        <a href={support} target="_blank" rel="noopener" class="shrink-0 self-start rounded-xl bg-white p-1.5 shadow-sm" aria-label="Buy Me a Coffee QR code">
+          <img src="/support/buymeacoffee-qr.webp" alt="QR code: buymeacoffee.com/mtstuffs" width="112" height="112" loading="lazy" class="size-28" />
+        </a>
+        <div class="min-w-0 flex-1">
+          <h2 class="text-lg font-semibold">{t('landing.support.title')}</h2>
+          <p class="mt-1 text-sm">{t('landing.support.body')}</p>
+          <p class="mt-2 text-sm"><i class="pi pi-key mr-1"></i>{t('landing.support.member')} <a href={membership} target="_blank" rel="noopener" class="font-semibold underline">{t('landing.support.memberCta')}</a></p>
+          <a href={support} target="_blank" rel="noopener" class="mt-3 inline-flex items-center gap-2 rounded-lg bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-700">
+            ☕ {t('landing.support.cta')}
+          </a>
+          <span class="ml-2 text-xs opacity-75">buymeacoffee.com/mtstuffs</span>
+        </div>
+      </div>
+    </section>
   </main>
 
   <footer class="border-t border-[var(--k-border)]">
@@ -106,7 +123,9 @@ const whyIcon: Record<string, string> = { offline: 'pi-wifi', private: 'pi-lock'
       <p class="mt-1">
         © {new Date().getFullYear()} Kitroid ·
         <a href="/privacy/" class="underline">Privacy</a> ·
-        <a href="/terms/" class="underline">Terms</a>
+        <a href="/terms/" class="underline">Terms</a> ·
+        <a href={support} target="_blank" rel="noopener" class="underline">☕ Buy Me a Coffee</a> ·
+        <a href="https://github.com/osify/kits" target="_blank" rel="noopener" class="underline">GitHub</a>
       </p>
     </div>
   </footer>

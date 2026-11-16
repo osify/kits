@@ -19,7 +19,7 @@ Users run the tools at their own risk; Kitroid never receives their data.
 | `/crm/` | Customers: contacts (phone, Telegram, tags, birthday), follow-ups with today/overdue list, activity log, debts per currency, CSV import/export, backups | done (own DB `crm`, `src/tools/crm/`) |
 | `/calc/` | Useful calculators: change in ៛/$, cash-drawer count, VAT, discount, unit price | done (stateless, `src/tools/calc/`) |
 | `/finance/` | Financial calculator: loan (annuity / equal principal / flat, true cost incl. fees, schedule, CSV, print), savings, price & profit, break-even, **Salary & NSSF** (GDT Tax on Salary, allowances, FBT, NSSF by month, payslip), **Withholding tax** | done (stateless). **Tax/NSSF rates live in `src/tools/finance/rates.ts` with `CHECKED` date + sources: update there when the law changes** |
-| later | Financial calculator, Income/Expense, CRM, Useful calculators, Tong Tin (savings circle) | planned |
+| `/tongtin/` | Tong Tin (savings circle): circles with hands, bid or fixed-order rounds, head takes round 1, who paid per round, per-hand totals, planner with each turn's gain/cost and rate per round, backups | done (own DB `tongtin`, `src/tools/tongtin/`; rules in `rules.ts`) |
 
 This is **not** POS-52. POS-52 (`U:\BP\POS-52`, the server-based system used by LomOr & Co) is the
 reference for business logic: Quick Sale (`frontends/admin-portal/src/views/sales/QuickSaleView.vue`),
@@ -110,7 +110,7 @@ npm run dev        # http://localhost:4321  (service worker disabled in dev)
 npm run build      # static output in dist/ (includes sw.js)
 npm run preview    # serve dist/ (test offline: load once, stop the server, reload)
 npm run check      # astro check + vue-tsc (types)
-npm test           # sync engine, finance, income & expense, calculators, customers, tax/NSSF (also runs in CI)
+npm test           # sync engine, finance, income & expense, calculators, customers, tax/NSSF, Tong Tin (also runs in CI)
 ```
 
 Deploy: push to `main` → `.github/workflows/deploy.yml` builds and publishes to GitHub Pages.
@@ -165,6 +165,14 @@ Google Drive needs `PUBLIC_GOOGLE_CLIENT_ID` at build time; see `docs/google-dri
 - Quick Sales tallies are per device (`getQuickSale` filters by `device_id`); POS numbers get a device
   tag when sync is on. Each device deletes its own change files after 60 days.
 - Joining: new device restores the shop's Drive backup (same shop id), then turns sync on.
+
+## Support & paid keys
+
+- Buy Me a Coffee: `SUPPORT_URL` / `MEMBERSHIP_URL` in `src/core/support.ts`; shown on the landing page,
+  `<SupportCard>` (`src/components/SupportCard.vue`) in each tool, and `.github/FUNDING.yml`. A link only:
+  no Buy Me a Coffee script or widget (no third-party scripts).
+- Monthly members get a Pro key: `node scripts/license/issue.mjs --name "Shop" --plan pro --months 1`
+  (see `docs/licensing.md`). POS → Menu & shop → Plan shows the membership card above the key box.
 
 ## Conventions
 

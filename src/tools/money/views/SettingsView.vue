@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SupportCard from '@/components/SupportCard.vue'
 import { computed, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useToast } from 'primevue/usetoast'
@@ -108,6 +109,8 @@ async function saveCat() {
         </button>
       </div>
     </section>
+
+    <SupportCard />
 
     <Dialog v-model:visible="accOpen" modal :header="acc.id ? t('money.editAccount') : t('money.addAccount')" class="w-[min(26rem,calc(100vw-1rem))]">
       <div class="flex flex-col gap-3">

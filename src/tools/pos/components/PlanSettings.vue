@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SupportCard from '@/components/SupportCard.vue'
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useToast } from 'primevue/usetoast'
@@ -78,6 +79,8 @@ const plans: Plan[] = ['free', 'pro', 'business']
         </table>
       </div>
     </section>
+
+    <SupportCard license />
 
     <section class="card flex flex-col gap-3">
       <h3 class="font-semibold">{{ t('pos.plan.enterKey') }}</h3>

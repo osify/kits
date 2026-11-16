@@ -35,3 +35,26 @@ node scripts/license/issue.mjs --name "LomOr & Co" --plan pro --exp 2027-12-31
 node scripts/license/issue.mjs --name "Shop B" --plan free --features unlimitedItems   # lift the 50-item limit only
 ```
 Send the printed `KIT1...` key to the customer.
+
+## Buy Me a Coffee members get a key
+
+Supporters pay at https://buymeacoffee.com/mtstuffs. **Monthly members** (Buy Me a Coffee → Memberships)
+get a **Pro** key; one-off coffees are thank-yous and don't come with a key.
+
+1. In Buy Me a Coffee, create a monthly membership level, e.g. *Kitroid Pro*. In its description ask
+   members to write their **shop name** (the name printed in the key and on receipts).
+2. When a member joins (Buy Me a Coffee emails you), issue a key valid one month plus 7 days' grace:
+   ```bash
+   node scripts/license/issue.mjs --name "Shop name" --plan pro --months 1 --note "BMC member"
+   ```
+   Members who pay yearly: `--months 12`.
+3. Send the `KIT1...` key through Buy Me a Coffee's message to the member (or Telegram/email).
+   They paste it in **POS → Menu & shop → Plan**. It works offline and is kept in their backups.
+4. Each month the membership renews, send a new key (same command). If a member stops paying, the key
+   simply expires; their data is never locked, they only go back to the Free limits.
+
+What Pro gives today: unlimited items on sale in POS (Free = 50). Any feature you later mark `'pro'`
+in `FEATURE_PLANS` is included for members automatically.
+
+The app links to the membership page (`MEMBERSHIP_URL` in `src/core/support.ts`) from
+POS → Plan, and to the coffee page from the landing page and each tool.

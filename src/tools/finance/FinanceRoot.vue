@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SupportCard from '@/components/SupportCard.vue'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import LangToggle from '@/components/LangToggle.vue'
@@ -45,6 +46,7 @@ const tabs = computed(() => [
     <main class="mx-auto w-full max-w-6xl flex-1 px-4 py-4 pb-24 md:pb-8">
       <RouterView />
       <p class="no-print mt-8 text-center text-xs text-[var(--k-muted)]">{{ t('fin.disclaimer') }}</p>
+      <SupportCard compact class="mt-4" />
     </main>
 
     <nav class="no-print fixed inset-x-0 bottom-0 z-20 grid grid-cols-6 border-t border-[var(--k-border)] bg-[var(--k-surface)] pb-[env(safe-area-inset-bottom)] md:hidden">

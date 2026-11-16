@@ -1,0 +1,12 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import { tr } from '../../core/i18n/static'
+---
+
+<BaseLayout title="Kitroid Tong Tin" description={tr('en', 'landing.tools.tongtinBody')} manifest="/tongtin/manifest.webmanifest">
+  <div id="tongtin-app"></div>
+  <noscript>Kitroid needs JavaScript. / Kitroid ត្រូវការ JavaScript។</noscript>
+  <script>
+    import '../../tools/tongtin/main'
+  </script>
+</BaseLayout>
