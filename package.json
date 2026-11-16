@@ -9,7 +9,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check && vue-tsc --noEmit -p tsconfig.json",
-    "test": "node scripts/test-sync.mts && node scripts/test-finance.mts && node scripts/test-money.mts && node scripts/test-calc.mts && node scripts/test-crm.mts && node scripts/test-tax.mts && node scripts/test-tongtin.mts"
+    "test": "node scripts/test-sync.mts && node scripts/test-finance.mts && node scripts/test-money.mts && node scripts/test-calc.mts && node scripts/test-crm.mts && node scripts/test-tax.mts && node scripts/test-tongtin.mts && node scripts/test-health.mts && node scripts/test-privacy.mts"
   },
   "dependencies": {
     "@astrojs/vue": "^7.1.6",
@@ -19,9 +19,11 @@
     "@tailwindcss/vite": "^4.3.5",
     "astro": "^7.4.12",
     "fflate": "^0.8.3",
+    "jsqr": "1.4.0",
     "pinia": "^4.1.0",
     "primeicons": "^8.0.2",
     "primevue": "~4.5.5",
+    "qrcode-generator": "2.0.4",
     "tailwindcss": "^4.3.5",
     "tailwindcss-primeui": "^0.6.1",
     "vue": "^3.5.45",

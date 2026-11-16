@@ -10,6 +10,7 @@ import type { SqliteClient } from '@/core/db/client'
 import { migrate, type Migration } from '@/core/db/migrate'
 import { getImage, putImage } from '@/core/files/images'
 import { prefs } from '@/core/util/prefs'
+import { decryptBytes, encryptBytes, getBackupKey, isEncrypted } from '@/core/privacy/crypto'
 import { downloadBackup as driveDownload, hasToken, listShopFolders, listBackups, shopBackups, uploadBackup, type DriveFile } from './drive'
 
 export interface ToolBackupOptions {
@@ -21,6 +22,8 @@ export interface ToolBackupOptions {
   /** image paths referenced by the database */
   photos: () => Promise<string[]>
   onSchema?: (v: number) => void
+  /** Offer password-encrypted backups (private data such as health records). */
+  encryptable?: boolean
 }
 
 export function createToolBackup(o: ToolBackupOptions) {
@@ -62,12 +65,15 @@ export function createToolBackup(o: ToolBackupOptions) {
     }
     const b = await o.book()
     files['manifest.json'] = strToU8(JSON.stringify({ app: `kitroid-${o.tool}`, format: 1, created_at: Date.now(), book: b.name }, null, 2))
-    return { bytes: zipSync(files), name: fileName() }
+    const zip = zipSync(files)
+    const k = o.encryptable ? await getBackupKey(o.tool) : null
+    if (!k) return { bytes: zip, name: fileName() }
+    return { bytes: await encryptBytes(zip, k.key, k.salt), name: fileName().replace(/\.zip$/, '.kitroid') }
   }
 
   async function downloadFile() {
     const { bytes, name } = await buildArchive()
-    const url = URL.createObjectURL(new Blob([bytes as BlobPart], { type: 'application/zip' }))
+    const url = URL.createObjectURL(new Blob([bytes as BlobPart], { type: name.endsWith('.zip') ? 'application/zip' : 'application/octet-stream' }))
     const a = document.createElement('a')
     a.href = url
     a.download = name
@@ -95,7 +101,12 @@ export function createToolBackup(o: ToolBackupOptions) {
     return b.id ? shopBackups(b.id, b.name || 'Kitroid', o.tool) : []
   }
 
-  async function restore(bytes: Uint8Array) {
+  /** Restore a backup. Encrypted backups need `password` (throws NEED_PASSWORD / BAD_PASSWORD). */
+  async function restore(bytes: Uint8Array, password?: string) {
+    if (isEncrypted(bytes)) {
+      if (!password) throw new Error('NEED_PASSWORD')
+      bytes = await decryptBytes(bytes, password)
+    }
     if (!(bytes[0] === 0x50 && bytes[1] === 0x4b)) throw new Error('NOT_BACKUP')
     const files = unzipSync(bytes)
     const dbFile = files[`${o.tool}.sqlite3`]
@@ -144,7 +155,9 @@ export function createToolBackup(o: ToolBackupOptions) {
     driveBooks: () => listShopFolders(o.tool),
     driveBookFiles: (folderId: string) => listBackups(folderId),
     restore,
-    restoreFromDrive: async (fileId: string) => restore(await driveDownload(fileId)),
+    restoreFromDrive: async (fileId: string, password?: string) => restore(await driveDownload(fileId), password),
+    encryptable: !!o.encryptable,
+    tool: o.tool,
     readManifest,
     startAutoBackup,
   }

@@ -135,7 +135,7 @@ async function createFolder(name: string, parent: string | null, appProperties?:
 }
 
 /** Drive folder name per tool: My Drive / Kitroid / <label>. */
-const TOOL_FOLDERS: Record<string, string> = { pos: 'POS', money: 'Income & Expense', crm: 'Customers', tongtin: 'Tong Tin' }
+const TOOL_FOLDERS: Record<string, string> = { pos: 'POS', money: 'Income & Expense', crm: 'Customers', tongtin: 'Tong Tin', health: 'Health', clinic: 'Clinic' }
 
 async function toolRoot(tool: string): Promise<string> {
   const kit =
@@ -179,10 +179,11 @@ export async function shopBackups(shopId: string, shopName: string, tool = 'pos'
 export async function uploadBackup(shopId: string, shopName: string, name: string, bytes: Uint8Array, tool = 'pos'): Promise<DriveFile> {
   const folder = await shopFolder(shopId, shopName, tool)
   const boundary = `kitroid${Math.random().toString(36).slice(2)}`
-  const meta = { name, parents: [folder], mimeType: 'application/zip', appProperties: { kitroid: `${tool}-backup` } }
+  const mime = name.endsWith('.zip') ? 'application/zip' : 'application/octet-stream' // encrypted backups are not zips
+  const meta = { name, parents: [folder], mimeType: mime, appProperties: { kitroid: `${tool}-backup` } }
   const body = new Blob([
     `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(meta)}\r\n`,
-    `--${boundary}\r\nContent-Type: application/zip\r\n\r\n`,
+    `--${boundary}\r\nContent-Type: ${mime}\r\n\r\n`,
     bytes as BlobPart,
     `\r\n--${boundary}--`,
   ])
