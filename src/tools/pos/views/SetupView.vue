@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import TrustedClinics from '../components/TrustedClinics.vue'
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
@@ -212,6 +213,7 @@ const catColor = (i: Item) => (i.category_id ? cat.categoryById.get(i.category_i
           <div class="max-w-3xl rounded-xl border border-[var(--k-border)] bg-[var(--k-surface)] px-5 py-4">
             <ShopForm />
           </div>
+          <TrustedClinics class="mt-4" />
         </TabPanel>
 
         <TabPanel value="printer">

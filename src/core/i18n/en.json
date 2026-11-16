@@ -1519,6 +1519,33 @@
     "added": "{n} medicines added to the cart",
     "importHint": "Each medicine is added with reminders from today for the number of days given. You can change them after.",
     "importMeds": "Add to my medicines",
-    "medsAdded": "{n} medicines added"
+    "medsAdded": "{n} medicines added",
+    "signedBy": "Signed with this clinic's key {fp}",
+    "clinicKey": "Clinic key",
+    "newKey": "Make a new key",
+    "newKeyConfirm": "Only do this if this device or a backup with the key may have fallen into the wrong hands. Prescriptions signed from now on use the new key, and every pharmacy must scan your new clinic card before they show as verified again.",
+    "cardTitle": "Clinic card for pharmacies",
+    "cardBody": "Your prescription codes are signed with this clinic's own key, so a pharmacy can check that a code really comes from you and was not changed. Show this card to each pharmacy once, in person: they scan it in Kitroid POS (Menu & shop → Shop → Trusted clinics). Or read them the key below on the phone.",
+    "showCard": "Show clinic card",
+    "hideCard": "Hide card",
+    "cardHint": "Show this only to pharmacies, in person. It contains your clinic name, phone and public key (no private data).",
+    "sig": {
+      "invalid": "Do not use: this code was changed or damaged. Its signature does not match.",
+      "unsigned": "Not signed. You cannot check where this code came from. Check the paper and the doctor's signature.",
+      "signed": "Signed by a clinic key {fp}, and not changed since.",
+      "trusted": "Verified: signed by {name} (key {fp}), which you trust, and not changed.",
+      "otherKey": "Warning: this says it is from {name}, but it is signed with a different key ({fp}) than the one you trust ({known}). It may be forged, or the clinic made a new key. Call the clinic before you sell.",
+      "unknown": "Signed by key {fp}, but you have not trusted \"{name}\" yet. Anyone can make a key and use any clinic name: trust it only after checking with the clinic (scan its clinic card, or compare the key by phone)."
+    },
+    "trustThis": "I checked with the clinic: trust this key",
+    "trustTitle": "Trust this clinic?",
+    "trustConfirm": "Prescriptions signed with key {fp} will show as verified from \"{name}\". Do this only if the clinic showed you its card in person, or confirmed this key on a phone number you already know.",
+    "trust": "Trust",
+    "untrust": "Remove",
+    "untrustConfirm": "Stop trusting {name}? Its prescriptions will show as unknown.",
+    "trustedTitle": "Trusted clinics",
+    "trustedBody": "Prescription codes from these clinics show as verified. Add a clinic by scanning its clinic card (Kitroid Clinic → More) when you meet them.",
+    "noTrusted": "No clinics yet.",
+    "scanCard": "Scan clinic card"
   }
 }

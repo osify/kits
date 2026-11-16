@@ -21,7 +21,8 @@ const props = defineProps<{
   lines: VisitLine[]
   total: number
   currency: 'KHR' | 'USD'
-  code?: string // Kitroid code for the rx QR
+  code?: string // signed Kitroid code for the rx QR
+  fp?: string // clinic key fingerprint
   showName: boolean
 }>()
 const { t } = useI18n()
@@ -86,8 +87,11 @@ const how = (i: RxItemRow) => [i.dose, i.times ? t('cl.timesDay', { n: i.times }
     <p v-if="kind === 'summary' && visit.followup_date" class="doc-follow">{{ t('cl.followupOn', { date: visit.followup_date }) }}</p>
 
     <div v-if="kind === 'rx' && code" class="doc-qr">
-      <QrCode :text="code" :size="120" :label="t('kx.codeLabel')" />
-      <div class="doc-small">{{ t('cl.doc.qrNote') }}</div>
+      <QrCode :text="code" :size="150" :label="t('kx.codeLabel')" />
+      <div class="doc-small">
+        {{ t('cl.doc.qrNote') }}
+        <template v-if="fp"><br />{{ t('kx.clinicKey') }}: {{ fp }}</template>
+      </div>
     </div>
     <footer class="doc-sign">
       <span v-if="kind !== 'receipt'">{{ t('cl.doc.signature') }}<br /><br />{{ clinic.doctor }}</span>

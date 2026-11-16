@@ -2,7 +2,7 @@
  * Kitroid codes: small, versioned data packets passed between separate tools (and separate
  * businesses) without any server, as a QR code on paper or screen, or as text pasted/sent.
  *
- *   KX1.<type>.<base64url(deflate(JSON))>
+ *   KX1.<type>.<base64url(deflate(JSON))>[.<public key>.<signature>]   (signing: sign.ts)
  *
  * Each type carries ONLY what the receiver needs (data minimisation). A prescription (type
  * "rx") for a pharmacy has the patient code, date, clinic/doctor and the medicines, and never
@@ -35,8 +35,17 @@ export interface RxPayload {
   phone?: string // clinic phone
   items: RxItem[]
 }
+/** A clinic's "card": who signs its prescriptions. Pharmacies scan it once to trust the clinic's key. */
+export interface ClinicCard {
+  v: 1
+  name: string
+  doctor?: string
+  phone?: string
+  address?: string
+}
 export interface KxTypes {
   rx: RxPayload
+  ck: ClinicCard
 }
 export type KxType = keyof KxTypes
 
@@ -62,15 +71,15 @@ export function decodeKx(text: string): KxDecoded {
   const m = /KX1\.([a-z]+)\.([A-Za-z0-9_-]+)/.exec(s)
   if (!m) throw new Error('NOT_KITROID_CODE')
   const type = m[1] as KxType
-  if (type !== 'rx') throw new Error('UNKNOWN_TYPE')
+  if (type !== 'rx' && type !== 'ck') throw new Error('UNKNOWN_TYPE')
   let data: any
   try {
     data = JSON.parse(strFromU8(inflateSync(unb64u(m[2]))))
   } catch {
     throw new Error('BAD_CODE')
   }
-  if (!validRx(data)) throw new Error('BAD_CODE')
-  return { type, data }
+  if (type === 'rx' ? !validRx(data) : !(data && data.v === 1 && typeof data.name === 'string' && data.name.trim())) throw new Error('BAD_CODE')
+  return { type, data } as KxDecoded
 }
 
 function validRx(d: any): d is RxPayload {

@@ -4,7 +4,8 @@
  */
 import type { DbLike } from '@/tools/pos/sync/engine'
 import { ulid } from '../../../core/util/id.ts' // relative + extension: also runs in Node tests
-import type { RxPayload } from '../../../core/exchange/codec.ts'
+import { encodeKx, type RxPayload } from '../../../core/exchange/codec.ts'
+import { fingerprint, generateSigningKey, signCode, type SigningKey } from '../../../core/exchange/sign.ts'
 
 export interface Patient {
   id: string
@@ -316,6 +317,36 @@ export async function rxPayload(db: DbLike, visitId: string, opts: { includeName
   if (age !== undefined && age >= 0) out.age = age
   if (p.sex) out.sex = p.sex
   return out
+}
+
+// ── Signing (prescriptions and the clinic card) ─────────────────────────────
+
+/**
+ * The clinic's signing key. Made on first use and kept in the clinic database (so it is in the
+ * clinic's own backups, encrypted if backup encryption is on). `rotate` makes a new key:
+ * pharmacies then have to trust the clinic again.
+ */
+export async function clinicKey(db: DbLike, rotate = false): Promise<SigningKey & { fingerprint: string }> {
+  const s = await getSettings(db)
+  if (!rotate && s.sign_key && s.sign_pub) return { privateJwk: JSON.parse(s.sign_key), pub: s.sign_pub, fingerprint: await fingerprint(s.sign_pub) }
+  const k = await generateSigningKey()
+  await setSetting(db, 'sign_key', JSON.stringify(k.privateJwk))
+  await setSetting(db, 'sign_pub', k.pub)
+  return { ...k, fingerprint: await fingerprint(k.pub) }
+}
+/** Signed prescription code for a visit (null if it has no prescription). */
+export async function signedRxCode(db: DbLike, visitId: string, opts: { includeName: boolean }): Promise<{ code: string; fingerprint: string } | null> {
+  const pay = await rxPayload(db, visitId, opts)
+  if (!pay) return null
+  const k = await clinicKey(db)
+  return { code: await signCode(encodeKx('rx', pay), k), fingerprint: k.fingerprint }
+}
+/** Signed clinic card: pharmacies scan it once (in person) to trust this clinic's prescriptions. */
+export async function clinicCard(db: DbLike): Promise<{ code: string; fingerprint: string }> {
+  const s = await getSettings(db)
+  const k = await clinicKey(db)
+  const card = { v: 1 as const, name: s.book_name || 'Clinic', ...(s.doctor ? { doctor: s.doctor } : {}), ...(s.phone ? { phone: s.phone } : {}), ...(s.address ? { address: s.address } : {}) }
+  return { code: await signCode(encodeKx('ck', card), k), fingerprint: k.fingerprint }
 }
 
 // ── Reports & export ────────────────────────────────────────────────────────

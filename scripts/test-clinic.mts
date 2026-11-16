@@ -3,9 +3,10 @@ import sqlite3InitModule from '@sqlite.org/sqlite-wasm'
 import { CLINIC_MIGRATIONS } from '../src/tools/clinic/db/schema.ts'
 import {
   setupClinic, savePatient, listPatients, getPatient, saveService, startVisit, updateVisit, finishVisit, listVisitsOn, listLines, addLine,
-  visitTotal, saveRx, listRx, rxPayload, followupsDue, incomeByDay, patientsCsv, visitsCsv, getVisit, setSetting, deletePatient,
+  visitTotal, saveRx, listRx, rxPayload, signedRxCode, clinicCard, clinicKey, followupsDue, incomeByDay, patientsCsv, visitsCsv, getVisit, setSetting, deletePatient,
 } from '../src/tools/clinic/db/data.ts'
 import { encodeKx, decodeKx } from '../src/core/exchange/codec.ts'
+import { verifyCode } from '../src/core/exchange/sign.ts'
 import type { DbLike } from '../src/tools/pos/sync/engine.ts'
 
 const sqlite3: any = await sqlite3InitModule()
@@ -69,6 +70,16 @@ const id1 = pay.id
 check('same prescription keeps its id', (await rxPayload(db, v1, { includeName: false }))!.id === id1)
 await saveRx(db, v1, { name: 'Vitamin C', times: 1, days: 10 })
 check('changing the prescription gives a new id', (await rxPayload(db, v1, { includeName: false }))!.id !== id1)
+
+// Signed prescription + clinic card
+const sc = (await signedRxCode(db, v1, { includeName: false }))!
+const ver = await verifyCode(sc.code)
+check('prescription code is signed by the clinic key', ver.status === 'signed' && (ver as any).fingerprint === sc.fingerprint)
+check('the key is kept: same fingerprint next time', (await signedRxCode(db, v1, { includeName: false }))!.fingerprint === sc.fingerprint)
+const card = await clinicCard(db)
+check('clinic card is signed with the same key and carries the clinic name', card.fingerprint === sc.fingerprint && decodeKx(card.code).type === 'ck' && (decodeKx(card.code).data as any).name === 'Clinic Sok')
+const rotated = await clinicKey(db, true)
+check('a new key gives a new fingerprint', rotated.fingerprint !== sc.fingerprint && (await signedRxCode(db, v1, { includeName: false }))!.fingerprint === rotated.fingerprint)
 
 // Follow-ups, reports, CSV
 check('follow-up due on 24 Nov shows from that day', (await followupsDue(db, '2026-11-24')).length === 1 && (await followupsDue(db, '2026-11-23')).length === 0)

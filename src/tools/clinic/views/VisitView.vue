@@ -22,11 +22,10 @@ import ClinicDoc from '../components/ClinicDoc.vue'
 import LevelTag from '../../health/components/LevelTag.vue'
 import { db } from '../db'
 import {
-  addLine, deleteVisit, finishVisit, getPatient, getVisit, listLines, listRx, removeLine, removeRx, rxPayload, updateLine, updateVisit, visitTotal,
+  addLine, deleteVisit, finishVisit, getPatient, getVisit, listLines, listRx, removeLine, removeRx, signedRxCode, updateLine, updateVisit, visitTotal,
   type Patient, type RxItemRow, type Visit, type VisitLine,
 } from '../db/data'
 import { bpLevel, tempLevel, spo2Level } from '../../health/rules'
-import { encodeKx } from '@/core/exchange/codec'
 import { useClinic } from '../store'
 import { formatMoney } from '@/core/util/money'
 import { today } from '@/core/util/date'
@@ -141,9 +140,12 @@ function remove() {
 // ── Printing & pharmacy code ────────────────────────────────────────────────
 const includeName = computed(() => cl.settings.rx_name === '1')
 const code = ref('')
+const fp = ref('')
+/** Signed with this clinic's key, so pharmacies that trust the clinic see it as verified and unchanged. */
 async function makeCode() {
-  const pay = await rxPayload(db, id, { includeName: includeName.value })
-  code.value = pay ? encodeKx('rx', pay) : ''
+  const r = await signedRxCode(db, id, { includeName: includeName.value })
+  code.value = r?.code ?? ''
+  fp.value = r?.fingerprint ?? ''
   v.value = (await getVisit(db, id)) ?? v.value
 }
 const printKind = ref<'rx' | 'summary' | 'receipt'>('rx')
@@ -320,6 +322,7 @@ const num = (x: unknown) => (x === null || x === undefined || x === '' ? null : 
           {{ t('cl.includeName') }}
         </label>
         <p class="self-start text-xs text-[var(--k-muted)]"><i class="pi pi-shield mr-1" />{{ t('cl.shareContains') }}</p>
+        <p v-if="fp" class="self-start text-xs"><i class="pi pi-verified mr-1 text-primary-600" />{{ t('kx.signedBy', { fp }) }}</p>
         <textarea readonly class="w-full rounded-lg border border-[var(--k-border)] bg-transparent p-2 font-mono text-xs" rows="3" :value="code" />
         <Button :label="t('kx.copy')" icon="pi pi-copy" outlined class="self-start" @click="copyCode" />
       </div>
@@ -336,6 +339,7 @@ const num = (x: unknown) => (x === null || x === undefined || x === '' ? null : 
         :total="total"
         :currency="cl.currency"
         :code="code"
+        :fp="fp"
         :show-name="includeName"
       />
     </PrintSheet>

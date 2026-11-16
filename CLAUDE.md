@@ -178,6 +178,13 @@ Tools are separate books (one tab per DB), so data moves between tools and betwe
 - Clinic → pharmacy: POS "Scan prescription" matches medicines to the shop's products (`matchScore`), puts them
   in the cart and writes `Rx <code> <id>` in the sale note; a later scan of the same id warns "already sold".
 - Clinic → patient: Health "Scan prescription" creates the medicine schedule + an RX record.
+- **Signed codes** (`src/core/exchange/sign.ts`): `KX1.<type>.<data>.<pub>.<sig>`, ECDSA P-256 over
+  `KX1.<type>.<data>.<pub>`. The clinic's key is made on first use and kept in its DB settings (`sign_key`,
+  `sign_pub`; in its backups); "Make a new key" rotates it. The clinic card (`ck` type) carries name/phone and is
+  signed with the same key. Pharmacies keep trusted keys in POS setting `trusted_signers` (`pos/db/trust.ts`,
+  Menu & shop → Shop → Trusted clinics). `verifyCode` + `trustOf` give: trusted ✓ / unknown key / unknown key using
+  a trusted clinic's name (red) / invalid (blocked) / unsigned. A valid signature alone proves integrity, not
+  identity: trust comes only from scanning the card in person or confirming the fingerprint.
 - New types: add to `KxTypes`, validate in `decodeKx`, test in `scripts/test-exchange.mts`.
 - Customers/patients between tools: CSV in the Customers column format (`patientsCsv`).
 

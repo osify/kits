@@ -7,6 +7,10 @@ import Select from 'primevue/select'
 import InputNumber from 'primevue/inputnumber'
 import Message from 'primevue/message'
 import ScanCode from '@/components/ScanCode.vue'
+import SignatureBadge from '@/components/SignatureBadge.vue'
+import { useConfirm } from 'primevue/useconfirm'
+import { trustOf, verifyCode, type Trust, type Verified } from '@/core/exchange/sign'
+import { listTrusted, trustSigner } from '../db/trust'
 import { decodeKx, matchScore, rxQty, type RxPayload } from '@/core/exchange/codec'
 import { db } from '../db'
 import { useCatalogStore } from '../stores/catalog'
@@ -28,6 +32,29 @@ const rx = ref<RxPayload | null>(null)
 const err = ref('')
 const already = ref<{ number: string | null; business_date: string } | null>(null)
 const rows = reactive<{ itemId: string | null; qty: number }[]>([])
+const verified = ref<Verified | null>(null)
+const trust = ref<Trust | null>(null)
+const confirm = useConfirm()
+async function checkSignature(text: string) {
+  verified.value = await verifyCode(text)
+  trust.value = rx.value ? trustOf(verified.value, rx.value.clinic, await listTrusted()) : null
+}
+/** Trust the clinic's key from here (after checking the fingerprint with the clinic). */
+function trustNow() {
+  const v = verified.value
+  if (!rx.value || v?.status !== 'signed') return
+  confirm.require({
+    header: t('kx.trustTitle'),
+    message: t('kx.trustConfirm', { name: rx.value.clinic, fp: v.fingerprint }),
+    icon: 'pi pi-verified',
+    acceptProps: { label: t('kx.trust') },
+    rejectProps: { label: t('common.cancel'), text: true },
+    accept: async () => {
+      await trustSigner({ pub: v.pub, fingerprint: v.fingerprint, name: rx.value!.clinic, phone: rx.value!.phone })
+      trust.value = trustOf(v, rx.value!.clinic, await listTrusted())
+    },
+  })
+}
 
 watch(open, (v) => {
   if (v) {
@@ -49,6 +76,7 @@ async function onCode(text: string) {
     rx.value = null
     return
   }
+  await checkSignature(text)
   already.value =
     (await db.get<{ number: string | null; business_date: string }>(
       `SELECT number, business_date FROM sale WHERE note LIKE ? AND status IN ('PAID','CLOSED') ORDER BY created_at DESC LIMIT 1`,
@@ -72,7 +100,7 @@ const optsFor = (name: string) =>
     .sort((a, b) => b.s - a.s || a.it.name.localeCompare(b.it.name))
     .map(({ it }) => ({ label: `${it.name} · ${shop.fmt(it.price)}`, value: it.id }))
 const how = (i: RxPayload['items'][number]) => [i.d, i.t ? t('cl.timesDay', { n: i.t }) : '', i.days ? t('cl.forDays', { n: i.days }) : '', i.note].filter(Boolean).join(' · ')
-const ready = computed(() => rows.filter((r) => r.itemId && r.qty > 0))
+const ready = computed(() => (verified.value?.status === 'invalid' ? [] : rows.filter((r) => r.itemId && r.qty > 0)))
 function add() {
   if (!rx.value) return
   const lines = ready.value.map((r) => ({ item: items.value.find((i) => i.id === r.itemId)!, qty: r.qty }))
@@ -96,6 +124,7 @@ function add() {
           <template v-if="rx.phone"> · {{ rx.phone }}</template>
         </div>
       </div>
+      <SignatureBadge :verified="verified" :trust="trust" :claimed="rx.clinic" @trust="trustNow" />
       <Message v-if="already" severity="warn" :closable="false">{{ t('kx.alreadySold', { date: already.business_date, no: already.number ?? '' }) }}</Message>
       <ul class="flex flex-col divide-y divide-[var(--k-border)]">
         <li v-for="(i, k) in rx.items" :key="k" class="flex flex-col gap-2 py-2">
