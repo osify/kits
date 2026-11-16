@@ -39,7 +39,9 @@ usually needs a monthly fee, an account, a server, or a steady internet connecti
 | 💰 [**Income & Expense**](https://kitroid.com/money/) | Cash, bank and e-wallet accounts, money in/out, receipt photos, month and year reports, CSV |
 | 👥 [**Customers**](https://kitroid.com/crm/) | Contacts with phone and Telegram, follow-ups, activity log, debts per currency |
 | ➗ [**Useful calculators**](https://kitroid.com/calc/) | Change in ៛/$, cash-drawer count, VAT, discount, unit price |
-| 🔁 [**Tong Tin**](https://kitroid.com/tongtin/) | Savings circle (តុងទីន): members, rounds, bids, who has been paid |
+| 🔁 [**Tong Tin**](https://kitroid.com/tongtin/) | Savings circle (តុងទីន): winner and bid each round, who has paid, an Excel-like table |
+| ❤️ [**Family health**](https://kitroid.com/health/) | Medicines with reminders, blood pressure and sugar charts, appointments, vaccines. PIN lock and encrypted backups |
+| 🩺 [**Clinic**](https://kitroid.com/clinic/) | Patient queue, check-ups, prescriptions with a pharmacy QR (no diagnosis shared), fees and debts, follow-ups |
 
 <p align="center">
   <img src="docs/img/payroll.png" width="760" alt="Salary tax and NSSF calculator with payslip">
@@ -80,7 +82,7 @@ Static site on GitHub Pages: [Astro](https://astro.build), [Vue](https://vuejs.o
 ```bash
 npm install
 npm run dev       # http://localhost:4321
-npm test          # sync engine, finance, tax/NSSF, income & expense, customers, Tong Tin
+npm test          # all tool tests (sync, finance, tax, health, clinic, privacy, exchange…)
 npm run build     # static site in dist/
 npm run preview   # production build with the offline service worker
 ```

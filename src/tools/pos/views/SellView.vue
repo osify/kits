@@ -14,6 +14,7 @@ import ModifierDialog from '../components/ModifierDialog.vue'
 import PaymentDialog from '../components/PaymentDialog.vue'
 import Receipt from '../components/Receipt.vue'
 import PrintSheet from '../components/PrintSheet.vue'
+import RxImport from '../components/RxImport.vue'
 import { useCatalogStore } from '../stores/catalog'
 import { useShopStore } from '../stores/shop'
 import {
@@ -102,6 +103,16 @@ async function pick(item: Item) {
   }
   await addLine(sale.value.id, item)
   await reload()
+}
+const rxOpen = ref(false)
+/** Pharmacy: medicines from a clinic prescription code go into the cart; the prescription id goes in the note. */
+async function onRx(lines: { item: Item; qty: number }[], note: string) {
+  if (!sale.value) return
+  for (const l of lines) await addLine(sale.value.id, l.item, [], l.qty)
+  const old = sale.value.note?.trim()
+  await setNote(sale.value.id, old ? `${old} · ${note}` : note)
+  await reload()
+  toast.add({ severity: 'success', summary: t('kx.added', { n: lines.length }), life: 2500 })
 }
 async function onMods(mods: LineModifier[]) {
   if (!sale.value || !modItem.value) return
@@ -204,7 +215,13 @@ async function onPrint() {
 
 <template>
   <div class="grid gap-4 lg:grid-cols-[1fr_23rem]">
-    <ItemGrid :counts="counts" :stock="left" @pick="pick" />
+    <div class="flex min-w-0 flex-col gap-2">
+      <div class="flex justify-end">
+        <Button :label="t('kx.scanRx')" icon="pi pi-qrcode" text size="small" @click="rxOpen = true" />
+      </div>
+      <ItemGrid :counts="counts" :stock="left" @pick="pick" />
+    </div>
+    <RxImport v-model:open="rxOpen" @add="onRx" />
 
     <aside class="hidden lg:block">
       <div class="sticky top-20 h-[calc(100dvh-7rem)] overflow-hidden rounded-xl border border-[var(--k-border)] bg-[var(--k-surface)]">

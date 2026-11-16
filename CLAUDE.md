@@ -20,6 +20,8 @@ Users run the tools at their own risk; Kitroid never receives their data.
 | `/calc/` | Useful calculators: change in ៛/$, cash-drawer count, VAT, discount, unit price | done (stateless, `src/tools/calc/`) |
 | `/finance/` | Financial calculator: loan (annuity / equal principal / flat, true cost incl. fees, schedule, CSV, print), savings, price & profit, break-even, **Salary & NSSF** (GDT Tax on Salary, allowances, FBT, NSSF by month, payslip), **Withholding tax** | done (stateless). **Tax/NSSF rates live in `src/tools/finance/rates.ts` with `CHECKED` date + sources: update there when the law changes** |
 | `/tongtin/` | Tong Tin (savings circle): each round = 1) winner + final winning bid (bidding happens in person), 2) tick who paid their share, 3) pot given → close round. Excel-like table (hands × rounds, tap to mark paid, CSV), per-hand totals, planner, backups | done (own DB `tongtin`, `src/tools/tongtin/`; rules in `rules.ts`) |
+| `/health/` | Personal & family health (private): people, readings (BP, sugar, weight, temp, SpO₂) with status + chart, medicines with daily tick list, appointments, vaccines/records with photos, readings CSV. PIN lock + encrypted backups | done (own DB `health`, `src/tools/health/`, rules in `rules.ts`) |
+| `/clinic/` | Doctor check-up: patient codes (P-0001), daily queue, vitals, private notes (complaint/exam/diagnosis/plan), prescription, fees from a price list, payment/debt, follow-ups, A5 prescription/summary/receipt, pharmacy QR, monthly report, CSV. PIN lock + encrypted backups | done (own DB `clinic`, `src/tools/clinic/`) |
 
 This is **not** POS-52. POS-52 (`U:\BP\POS-52`, the server-based system used by LomOr & Co) is the
 reference for business logic: Quick Sale (`frontends/admin-portal/src/views/sales/QuickSaleView.vue`),
@@ -110,7 +112,7 @@ npm run dev        # http://localhost:4321  (service worker disabled in dev)
 npm run build      # static output in dist/ (includes sw.js)
 npm run preview    # serve dist/ (test offline: load once, stop the server, reload)
 npm run check      # astro check + vue-tsc (types)
-npm test           # sync engine, finance, income & expense, calculators, customers, tax/NSSF, Tong Tin (also runs in CI)
+npm test           # sync, finance, money, calc, CRM, tax/NSSF, Tong Tin, health, privacy, exchange, clinic (also runs in CI)
 ```
 
 Deploy: push to `main` → `.github/workflows/deploy.yml` builds and publishes to GitHub Pages.
@@ -165,6 +167,27 @@ Google Drive needs `PUBLIC_GOOGLE_CLIENT_ID` at build time; see `docs/google-dri
 - Quick Sales tallies are per device (`getQuickSale` filters by `device_id`); POS numbers get a device
   tag when sync is on. Each device deletes its own change files after 60 days.
 - Joining: new device restores the shop's Drive backup (same shop id), then turns sync on.
+
+## Exchange between tools (no server): Kitroid codes
+
+Tools are separate books (one tab per DB), so data moves between tools and between businesses as a
+**Kitroid code**: `KX1.<type>.<base64url(deflate(JSON))>` (`src/core/exchange/codec.ts`), shown as a QR
+(`QrCode.vue`) or text, read with `ScanCode.vue` (camera via BarcodeDetector or lazy jsQR, photo, or paste).
+- Each type carries only what the receiver needs. `rx` (prescription) = patient code, age/sex, date, clinic,
+  doctor, medicines. **Never** complaint, exam, diagnosis, vitals or notes; the name only if the clinic opts in.
+- Clinic → pharmacy: POS "Scan prescription" matches medicines to the shop's products (`matchScore`), puts them
+  in the cart and writes `Rx <code> <id>` in the sale note; a later scan of the same id warns "already sold".
+- Clinic → patient: Health "Scan prescription" creates the medicine schedule + an RX record.
+- New types: add to `KxTypes`, validate in `decodeKx`, test in `scripts/test-exchange.mts`.
+- Customers/patients between tools: CSV in the Customers column format (`patientsCsv`).
+
+## Privacy (Health, Clinic)
+
+- `createLock(tool)` (`src/core/privacy/lock.ts`) + `<LockScreen>` + `<PrivacyPanel>`: PIN (PBKDF2 hash only),
+  auto-lock, screen hidden in the app switcher, delete-everything. It is not on-device encryption; the UI says so.
+- Encrypted backups: `createToolBackup({ encryptable: true })` + `src/core/privacy/crypto.ts` (AES-256-GCM,
+  PBKDF2 key kept non-extractable in IndexedDB, `.kitroid` files, restore asks for the password).
+- Exports with medical data warn; exports for others (patients CSV, visits CSV, rx code) leave medical details out.
 
 ## Support & paid keys
 

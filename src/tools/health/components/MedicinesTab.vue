@@ -8,8 +8,11 @@ import InputText from 'primevue/inputtext'
 import DatePicker from 'primevue/datepicker'
 import ToggleSwitch from 'primevue/toggleswitch'
 import Tag from 'primevue/tag'
+import { useToast } from 'primevue/usetoast'
+import ScanCode from '@/components/ScanCode.vue'
+import { decodeKx, type RxPayload } from '@/core/exchange/codec'
 import { db } from '../db'
-import { deleteMedicine, listMedicines, saveMedicine, type Medicine } from '../db/data'
+import { deleteMedicine, listMedicines, saveMedicine, saveRecord, type Medicine } from '../db/data'
 import { timesOf } from '../rules'
 import { today } from '@/core/util/date'
 
@@ -66,12 +69,77 @@ function days(n: number) {
   d.setDate(d.getDate() + n - 1)
   f.end = d
 }
+
+// ── Import a clinic prescription (Kitroid code) as a medicine schedule ─────
+const toast = useToast()
+const scanning = ref(false)
+const rx = ref<RxPayload | null>(null)
+const rxErr = ref('')
+const TIMES_BY_COUNT: Record<number, string[]> = { 1: ['08:00'], 2: ['08:00', '20:00'], 3: ['07:00', '12:00', '19:00'], 4: ['07:00', '12:00', '17:00', '21:00'] }
+function onCode(text: string) {
+  rxErr.value = ''
+  try {
+    const d = decodeKx(text)
+    if (d.type !== 'rx') throw new Error('UNKNOWN_TYPE')
+    rx.value = d.data
+  } catch (e: any) {
+    rx.value = null
+    rxErr.value = t(`kx.err.${e.message}`, t('kx.err.BAD_CODE'))
+    toast.add({ severity: 'error', summary: rxErr.value, life: 4000 })
+  }
+}
+async function importRx() {
+  if (!rx.value) return
+  const start = new Date()
+  for (const i of rx.value.items) {
+    const end = i.days ? new Date(start.getFullYear(), start.getMonth(), start.getDate() + i.days - 1) : null
+    await saveMedicine(db, {
+      person_id: props.personId,
+      name: i.n,
+      dose: i.d ?? '',
+      times: (TIMES_BY_COUNT[Math.min(4, Math.max(1, i.t ?? 1))] ?? ['08:00']).join(','),
+      start_date: today(start),
+      end_date: end ? today(end) : null,
+      note: [i.note, rx.value.clinic].filter(Boolean).join(' · '),
+    })
+  }
+  await saveRecord(db, {
+    person_id: props.personId,
+    kind: 'RX',
+    date: rx.value.date,
+    title: `${rx.value.clinic}${rx.value.doctor ? ` · ${rx.value.doctor}` : ''}`,
+    note: rx.value.items.map((i) => `${i.n}${i.d ? ` — ${i.d}` : ''}${i.t ? ` × ${i.t}/d` : ''}${i.days ? `, ${i.days} d` : ''}`).join(String.fromCharCode(10)),
+  })
+  toast.add({ severity: 'success', summary: t('kx.medsAdded', { n: rx.value.items.length }), life: 3000 })
+  rx.value = null
+  await load()
+}
 defineExpose({ edit, load })
 </script>
 
 <template>
   <div class="flex flex-col gap-3">
-    <Button :label="t('hl.addMedicine')" icon="pi pi-plus" class="self-start" @click="edit()" />
+    <div class="flex flex-wrap gap-2">
+      <Button :label="t('hl.addMedicine')" icon="pi pi-plus" @click="edit()" />
+      <Button :label="t('kx.scanRx')" icon="pi pi-qrcode" outlined @click="scanning = true" />
+    </div>
+    <ScanCode v-model:open="scanning" :title="t('kx.scanRx')" @code="onCode" />
+    <Dialog :visible="!!rx" modal :header="t('kx.rxTitle')" class="w-[min(28rem,calc(100vw-1rem))]" @update:visible="(v: boolean) => !v && (rx = null)">
+      <div v-if="rx" class="flex flex-col gap-2 text-sm">
+        <p class="font-semibold">{{ rx.clinic }}<template v-if="rx.doctor"> · {{ rx.doctor }}</template> · {{ rx.date }}</p>
+        <ul class="flex flex-col divide-y divide-[var(--k-border)]">
+          <li v-for="(i, k) in rx.items" :key="k" class="py-1.5">
+            <b>{{ i.n }}</b>
+            <span class="block text-xs text-[var(--k-muted)]">{{ [i.d, i.t ? t('cl.timesDay', { n: i.t }) : '', i.days ? t('cl.forDays', { n: i.days }) : '', i.note].filter(Boolean).join(' · ') }}</span>
+          </li>
+        </ul>
+        <p class="text-xs text-[var(--k-muted)]">{{ t('kx.importHint') }}</p>
+      </div>
+      <template #footer>
+        <Button :label="t('common.cancel')" text @click="rx = null" />
+        <Button :label="t('kx.importMeds')" icon="pi pi-check" @click="importRx" />
+      </template>
+    </Dialog>
     <p v-if="!rows.length" class="py-6 text-center text-sm text-[var(--k-muted)]">{{ t('hl.noMedicines') }}</p>
     <ul v-else class="flex flex-col gap-2">
       <li v-for="m in rows" :key="m.id">
