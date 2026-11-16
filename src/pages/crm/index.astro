@@ -1,0 +1,12 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import { tr } from '../../core/i18n/static'
+---
+
+<BaseLayout title="Kitroid Customers" description={tr('en', 'landing.tools.crmBody')} manifest="/crm/manifest.webmanifest">
+  <div id="crm-app"></div>
+  <noscript>Kitroid needs JavaScript. / Kitroid ត្រូវការ JavaScript។</noscript>
+  <script>
+    import '../../tools/crm/main'
+  </script>
+</BaseLayout>

@@ -135,7 +135,7 @@ async function createFolder(name: string, parent: string | null, appProperties?:
 }
 
 /** Drive folder name per tool: My Drive / Kitroid / <label>. */
-const TOOL_FOLDERS: Record<string, string> = { pos: 'POS', money: 'Income & Expense' }
+const TOOL_FOLDERS: Record<string, string> = { pos: 'POS', money: 'Income & Expense', crm: 'Customers' }
 
 async function toolRoot(tool: string): Promise<string> {
   const kit =

@@ -15,7 +15,10 @@
       "action": "Update now",
       "later": "Later"
     },
-    "offlineReady": "Ready to work offline."
+    "offlineReady": "Ready to work offline.",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back"
   },
   "pos": {
     "title": "Kitroid POS",
@@ -798,5 +801,119 @@
       "add": "Add another pack",
       "remove": "Remove"
     }
+  },
+  "bk": {
+    "last": "Last backup: {when}",
+    "never": "never",
+    "dirty": "There are changes since the last backup.",
+    "clean": "Everything is backed up.",
+    "connected": "Connected",
+    "driveBody": "Saved in your own Google Drive ({folder}). Automatic every 30 minutes while you are signed in.",
+    "notConfigured": "Google Drive backup is not set up on this website yet. Download a backup file instead.",
+    "backupNow": "Back up now",
+    "disconnect": "Disconnect",
+    "inDrive": "{n} backups in Drive",
+    "ok": "Backed up to Google Drive",
+    "signInAgain": "Please sign in to Google again.",
+    "downloadTitle": "Download a backup file",
+    "downloadBody": "A .zip with all your data. Keep it somewhere safe.",
+    "download": "Download backup file",
+    "downloaded": "Backup file downloaded",
+    "restore": "Restore",
+    "restoreOpen": "Restore a backup…",
+    "restoreWarn": "Restoring replaces everything on this device with the backup.",
+    "fromFile": "From a file",
+    "fromDrive": "From Google Drive",
+    "noneInDrive": "No backups found.",
+    "restoreConfirm": "Replace all data on this device with the backup {what}?",
+    "restoreNow": "Replace and restore",
+    "notBackup": "This file is not a backup of this Kitroid tool.",
+    "remind": "Your data has not been backed up for more than 3 days."
+  },
+  "crm": {
+    "title": "Kitroid Customers",
+    "tagline": "Your customers, follow-ups and who owes you, on this device.",
+    "nav": {
+      "today": "Today",
+      "list": "Customers",
+      "more": "More",
+      "backup": "Backup"
+    },
+    "welcome": {
+      "title": "Start your customer book",
+      "namePh": "e.g. LomOr & Co",
+      "disclaimer": "Your customers are stored only on this device. If you clear the browser or lose the device they are gone, unless you back up. Kitroid cannot see or recover them. Use at your own risk.",
+      "accept": "I understand",
+      "start": "Start",
+      "restore": "Restore a backup"
+    },
+    "bookName": "Business name",
+    "newCustomer": "New customer",
+    "editCustomer": "Edit customer",
+    "name": "Name",
+    "phone": "Phone",
+    "address": "Address",
+    "tags": "Tags",
+    "tagsPh": "VIP, Wholesale…",
+    "birthday": "Birthday (MM-DD)",
+    "note": "Note",
+    "amount": "Amount",
+    "date": "Date",
+    "dueDate": "Remind me on",
+    "whatToDo": "What to do",
+    "search": "Search name, phone or note",
+    "allTags": "All tags",
+    "onlyOwing": "Owes money",
+    "sort": {
+      "name": "Name",
+      "recent": "Recent",
+      "owed": "Owes most"
+    },
+    "empty": "No customers yet. Add one, or import a CSV in More.",
+    "dueCount": "Follow-ups today",
+    "owedTotal": "Owed to you ({n} customers)",
+    "birthdays": "Birthdays (2 weeks)",
+    "followups": "Follow-ups",
+    "noneDue": "Nothing to follow up today.",
+    "overdue": "Overdue since {date}",
+    "today": "Today",
+    "inDays": "in {n} days",
+    "call": "Call",
+    "later": "In 3 days",
+    "done": "Done",
+    "birthdaysSoon": "Birthdays coming up",
+    "owes": "Owes you",
+    "history": "History",
+    "noHistory": "Nothing recorded yet.",
+    "entry": {
+      "activity": "Log contact",
+      "charge": "Add debt",
+      "payment": "Paid back",
+      "followup": "Add follow-up"
+    },
+    "kind": {
+      "CALL": "Call",
+      "VISIT": "Visit",
+      "MESSAGE": "Message",
+      "SALE": "Sale",
+      "NOTE": "Note"
+    },
+    "ledger": {
+      "CHARGE": "Debt added",
+      "PAYMENT": "Paid back"
+    },
+    "followupFor": "Follow up on {date}",
+    "followupDone": "Follow-up done",
+    "deleteEntry": "Delete this entry?",
+    "archive": "Hide customer",
+    "archiveConfirm": "Hide {name}? Their history is kept.",
+    "notFound": "Customer not found.",
+    "csvTitle": "Import / export (Excel)",
+    "csvBody": "Export your customer list as CSV, or import one: the first row must have a \"name\" column (phone, telegram, address, tags, birthday, note are optional). Names already in the book are skipped.",
+    "csvExport": "Export CSV",
+    "csvImport": "Import CSV",
+    "imported": "Imported {added} customers ({skipped} skipped)",
+    "csvNeedsName": "The CSV needs a \"name\" column.",
+    "otherTab": "Kitroid Customers is open in another tab"
   }
 }

@@ -16,6 +16,7 @@ Users run the tools at their own risk; Kitroid never receives their data.
 | `/privacy/`, `/terms/` | Privacy policy and terms (required by Google OAuth) | done (review before launch) |
 | `/pos/` | POS + Quick Sales | Phases 0–6 done |
 | `/money/` | Income & Expense: accounts (cash/bank/e-wallet, ៛ or $), money in/out/transfer, categories, receipt photos, month view, year report, CSV, Drive/file backup + restore | done (own DB `money`, `src/tools/money/`) |
+| `/crm/` | Customers: contacts (phone, Telegram, tags, birthday), follow-ups with today/overdue list, activity log, debts per currency, CSV import/export, backups | done (own DB `crm`, `src/tools/crm/`) |
 | `/calc/` | Useful calculators: change in ៛/$, cash-drawer count, VAT, discount, unit price | done (stateless, `src/tools/calc/`) |
 | `/finance/` | Financial calculator: loan (annuity / equal principal / flat, true cost incl. fees, schedule, CSV, print), savings, price & profit, break-even | done (stateless; inputs remembered per device) |
 | later | Financial calculator, Income/Expense, CRM, Useful calculators, Tong Tin (savings circle) | planned |
@@ -93,6 +94,8 @@ src/vue-app.ts            Astro appEntrypoint for Vue islands on Astro pages
 - Each tool's DB has its OWN OPFS SAH-pool directory (`poolFor()` in `sqlite.worker.ts`): the pool locks its whole
   directory, so a shared pool would stop two tools running in two tabs. POS keeps `.kitroid`; others use `.kitroid-<name>`.
 - Drive helpers live in `src/core/backup/drive.ts` and take a `tool` argument (`My Drive / Kitroid / <tool folder>`).
+- New single-database tools get backups from `createToolBackup()` (`src/core/backup/toolBackup.ts`) and the
+  shared `<BackupPanel>` screen (`src/components/BackupPanel.vue`); see `src/tools/crm/db/index.ts`.
 - Persist every user tap immediately (drafts in the DB), so refresh/close/crash loses nothing.
 
 ## Repository
@@ -107,7 +110,7 @@ npm run dev        # http://localhost:4321  (service worker disabled in dev)
 npm run build      # static output in dist/ (includes sw.js)
 npm run preview    # serve dist/ (test offline: load once, stop the server, reload)
 npm run check      # astro check + vue-tsc (types)
-npm test           # sync engine, finance, income & expense, useful calculators (also runs in CI)
+npm test           # sync engine, finance, income & expense, calculators, customers (also runs in CI)
 ```
 
 Deploy: push to `main` → `.github/workflows/deploy.yml` builds and publishes to GitHub Pages.

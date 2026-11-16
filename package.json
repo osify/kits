@@ -9,7 +9,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check && vue-tsc --noEmit -p tsconfig.json",
-    "test": "node scripts/test-sync.mts && node scripts/test-finance.mts && node scripts/test-money.mts && node scripts/test-calc.mts"
+    "test": "node scripts/test-sync.mts && node scripts/test-finance.mts && node scripts/test-money.mts && node scripts/test-calc.mts && node scripts/test-crm.mts"
   },
   "dependencies": {
     "@astrojs/vue": "^7.1.6",
