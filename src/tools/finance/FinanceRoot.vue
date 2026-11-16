@@ -11,6 +11,8 @@ const tabs = computed(() => [
   { to: '/savings', icon: 'pi pi-wallet', label: t('fin.tab.savings') },
   { to: '/profit', icon: 'pi pi-percentage', label: t('fin.tab.profit') },
   { to: '/breakeven', icon: 'pi pi-chart-line', label: t('fin.tab.breakeven') },
+  { to: '/payroll', icon: 'pi pi-id-card', label: t('fin.tab.payroll') },
+  { to: '/withholding', icon: 'pi pi-receipt', label: t('fin.tab.wht') },
 ])
 </script>
 
@@ -45,12 +47,12 @@ const tabs = computed(() => [
       <p class="no-print mt-8 text-center text-xs text-[var(--k-muted)]">{{ t('fin.disclaimer') }}</p>
     </main>
 
-    <nav class="no-print fixed inset-x-0 bottom-0 z-20 grid grid-cols-4 border-t border-[var(--k-border)] bg-[var(--k-surface)] pb-[env(safe-area-inset-bottom)] md:hidden">
+    <nav class="no-print fixed inset-x-0 bottom-0 z-20 grid grid-cols-6 border-t border-[var(--k-border)] bg-[var(--k-surface)] pb-[env(safe-area-inset-bottom)] md:hidden">
       <RouterLink
         v-for="tab in tabs"
         :key="tab.to"
         :to="tab.to"
-        class="flex flex-col items-center gap-0.5 px-1 py-2 text-[11px] leading-tight text-[var(--k-muted)]"
+        class="flex flex-col items-center gap-0.5 px-0.5 py-2 text-[10px] leading-tight text-[var(--k-muted)]"
         active-class="!text-primary-600 dark:!text-primary-400"
       >
         <i :class="tab.icon" class="text-lg" />

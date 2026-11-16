@@ -18,7 +18,7 @@ Users run the tools at their own risk; Kitroid never receives their data.
 | `/money/` | Income & Expense: accounts (cash/bank/e-wallet, ៛ or $), money in/out/transfer, categories, receipt photos, month view, year report, CSV, Drive/file backup + restore | done (own DB `money`, `src/tools/money/`) |
 | `/crm/` | Customers: contacts (phone, Telegram, tags, birthday), follow-ups with today/overdue list, activity log, debts per currency, CSV import/export, backups | done (own DB `crm`, `src/tools/crm/`) |
 | `/calc/` | Useful calculators: change in ៛/$, cash-drawer count, VAT, discount, unit price | done (stateless, `src/tools/calc/`) |
-| `/finance/` | Financial calculator: loan (annuity / equal principal / flat, true cost incl. fees, schedule, CSV, print), savings, price & profit, break-even | done (stateless; inputs remembered per device) |
+| `/finance/` | Financial calculator: loan (annuity / equal principal / flat, true cost incl. fees, schedule, CSV, print), savings, price & profit, break-even, **Salary & NSSF** (GDT Tax on Salary, allowances, FBT, NSSF by month, payslip), **Withholding tax** | done (stateless). **Tax/NSSF rates live in `src/tools/finance/rates.ts` with `CHECKED` date + sources: update there when the law changes** |
 | later | Financial calculator, Income/Expense, CRM, Useful calculators, Tong Tin (savings circle) | planned |
 
 This is **not** POS-52. POS-52 (`U:\BP\POS-52`, the server-based system used by LomOr & Co) is the
@@ -110,7 +110,7 @@ npm run dev        # http://localhost:4321  (service worker disabled in dev)
 npm run build      # static output in dist/ (includes sw.js)
 npm run preview    # serve dist/ (test offline: load once, stop the server, reload)
 npm run check      # astro check + vue-tsc (types)
-npm test           # sync engine, finance, income & expense, calculators, customers (also runs in CI)
+npm test           # sync engine, finance, income & expense, calculators, customers, tax/NSSF (also runs in CI)
 ```
 
 Deploy: push to `main` → `.github/workflows/deploy.yml` builds and publishes to GitHub Pages.

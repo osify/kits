@@ -13,6 +13,8 @@ const router = createRouter({
     { path: '/savings', component: () => import('./views/SavingsView.vue') },
     { path: '/profit', component: () => import('./views/ProfitView.vue') },
     { path: '/breakeven', component: () => import('./views/BreakEvenView.vue') },
+    { path: '/payroll', component: () => import('./views/PayrollView.vue') },
+    { path: '/withholding', component: () => import('./views/WithholdingView.vue') },
     { path: '/:pathMatch(.*)*', redirect: '/loan' },
   ],
 })
