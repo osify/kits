@@ -1,0 +1,20 @@
+{
+  "id": "/calc/",
+  "name": "Kitroid Useful calculators",
+  "short_name": "Kitroid Calc",
+  "description": "Change in riel and dollars, cash count, VAT, discount and unit price. Works offline.",
+  "lang": "km",
+  "start_url": "/calc/",
+  "scope": "/calc/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f6f7f5",
+  "theme_color": "#059669",
+  "categories": ["business", "finance", "utilities"],
+  "icons": [
+    { "src": "/icons/kitroid.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "/icons/pwa-192x192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/pwa-512x512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icons/maskable-icon-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

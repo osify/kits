@@ -740,5 +740,63 @@
       "notBackup": "This file is not a Kitroid Income & Expense backup.",
       "remind": "Your book has not been backed up for more than 3 days."
     }
+  },
+  "calc": {
+    "title": "Kitroid Useful calculators",
+    "rate": "Exchange rate (៛ per $1)",
+    "clear": "Clear",
+    "tab": {
+      "change": "Change",
+      "cash": "Cash count",
+      "vat": "VAT",
+      "discount": "Discount",
+      "unit": "Unit price"
+    },
+    "change": {
+      "due": "Customer must pay",
+      "paidUsd": "Paid in dollars",
+      "paidKhr": "Paid in riel",
+      "paid": "Received / to pay",
+      "stillOwes": "Customer still needs to pay",
+      "giveRiel": "Give change (all in riel)",
+      "orMixed": "Or give",
+      "note": "Change is rounded to the nearest 100 ៛ note."
+    },
+    "cash": {
+      "riel": "Riel notes",
+      "usd": "Dollar notes",
+      "total": "Total in the drawer",
+      "notes": "Notes counted"
+    },
+    "vat": {
+      "add": "Add VAT",
+      "remove": "Remove VAT",
+      "priceExcl": "Price without VAT",
+      "priceIncl": "Price with VAT",
+      "rate": "VAT rate",
+      "net": "Without VAT",
+      "tax": "VAT {rate}%",
+      "gross": "With VAT",
+      "note": "Cambodia's standard VAT rate is 10%. Check your own tax obligations."
+    },
+    "disc": {
+      "price": "Original price",
+      "discount": "Discount",
+      "second": "Extra discount on top",
+      "pay": "Customer pays",
+      "saved": "Saves {amount} ({pct}%)",
+      "stackNote": "Two discounts are applied one after the other: 10% + 10% = 19% off, not 20%."
+    },
+    "unit": {
+      "unit": "Unit",
+      "name": "Pack",
+      "price": "Price",
+      "qty": "Size ({unit})",
+      "per100": "Price per 100 {unit}",
+      "best": "Best value",
+      "more": "{pct}% more expensive",
+      "add": "Add another pack",
+      "remove": "Remove"
+    }
   }
 }

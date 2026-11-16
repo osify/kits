@@ -16,6 +16,7 @@ Users run the tools at their own risk; Kitroid never receives their data.
 | `/privacy/`, `/terms/` | Privacy policy and terms (required by Google OAuth) | done (review before launch) |
 | `/pos/` | POS + Quick Sales | Phases 0–6 done |
 | `/money/` | Income & Expense: accounts (cash/bank/e-wallet, ៛ or $), money in/out/transfer, categories, receipt photos, month view, year report, CSV, Drive/file backup + restore | done (own DB `money`, `src/tools/money/`) |
+| `/calc/` | Useful calculators: change in ៛/$, cash-drawer count, VAT, discount, unit price | done (stateless, `src/tools/calc/`) |
 | `/finance/` | Financial calculator: loan (annuity / equal principal / flat, true cost incl. fees, schedule, CSV, print), savings, price & profit, break-even | done (stateless; inputs remembered per device) |
 | later | Financial calculator, Income/Expense, CRM, Useful calculators, Tong Tin (savings circle) | planned |
 
@@ -94,6 +95,10 @@ src/vue-app.ts            Astro appEntrypoint for Vue islands on Astro pages
 - Drive helpers live in `src/core/backup/drive.ts` and take a `tool` argument (`My Drive / Kitroid / <tool folder>`).
 - Persist every user tap immediately (drafts in the DB), so refresh/close/crash loses nothing.
 
+## Repository
+
+https://github.com/osify/kits (branch `main` deploys to GitHub Pages via `.github/workflows/deploy.yml`).
+
 ## Commands
 
 ```bash
@@ -102,7 +107,7 @@ npm run dev        # http://localhost:4321  (service worker disabled in dev)
 npm run build      # static output in dist/ (includes sw.js)
 npm run preview    # serve dist/ (test offline: load once, stop the server, reload)
 npm run check      # astro check + vue-tsc (types)
-npm test           # sync engine (two SQLite devices) + finance calculations + income & expense data
+npm test           # sync engine, finance, income & expense, useful calculators (also runs in CI)
 ```
 
 Deploy: push to `main` → `.github/workflows/deploy.yml` builds and publishes to GitHub Pages.

@@ -71,3 +71,19 @@
     padding: 1rem 0 0 !important;
   }
 }
+
+/* Shared building blocks for tool screens. */
+@layer components {
+  .card {
+    border: 1px solid var(--k-border);
+    background: var(--k-surface);
+    border-radius: 0.75rem;
+    padding: 1rem 1.25rem;
+  }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    font-size: 0.875rem;
+  }
+}
