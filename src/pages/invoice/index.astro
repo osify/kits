@@ -1,0 +1,12 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import { tr } from '../../core/i18n/static'
+---
+
+<BaseLayout title="Kitroid Invoice" description={tr('en', 'landing.tools.invoiceBody')} manifest="/invoice/manifest.webmanifest">
+  <div id="invoice-app"></div>
+  <noscript>Kitroid needs JavaScript. / Kitroid ត្រូវការ JavaScript។</noscript>
+  <script>
+    import '../../tools/invoice/main'
+  </script>
+</BaseLayout>

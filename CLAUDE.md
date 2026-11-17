@@ -22,6 +22,7 @@ Users run the tools at their own risk; Kitroid never receives their data.
 | `/tongtin/` | Tong Tin (savings circle): each round = 1) winner + final winning bid (bidding happens in person), 2) tick who paid their share, 3) pot given → close round. Excel-like table (hands × rounds, tap to mark paid, CSV), per-hand totals, planner, backups | done (own DB `tongtin`, `src/tools/tongtin/`; rules in `rules.ts`) |
 | `/health/` | Personal & family health (private): people, readings (BP, sugar, weight, temp, SpO₂) with status + chart, medicines with daily tick list, appointments, vaccines/records with photos, readings CSV. PIN lock + encrypted backups | done (own DB `health`, `src/tools/health/`, rules in `rules.ts`) |
 | `/clinic/` | Doctor check-up: patient codes (P-0001), daily queue, vitals, private notes (complaint/exam/diagnosis/plan), prescription, fees from a price list, payment/debt, follow-ups, A5 prescription/summary/receipt, pharmacy QR, monthly report, CSV. PIN lock + encrypted backups | done (own DB `clinic`, `src/tools/clinic/`) |
+| `/invoice/` | Invoices & quotes: clients (VAT TIN), saved items, quote → invoice, draft → issue (numbers `INV-YYYY-0001` per year, no gaps: issued invoices are voided, never deleted), VAT 10% with tax-invoice title when the business has a VAT TIN, USD docs show riel at the doc's rate, payments/partial/overdue, A4 print (Khmer + English labels), receipt, share text, monthly report + invoices CSV, clients CSV in Customers format | done (own DB `invoice`, `src/tools/invoice/`; totals are stored on `doc` by `recalc()`) |
 
 This is **not** POS-52. POS-52 (`U:\BP\POS-52`, the server-based system used by LomOr & Co) is the
 reference for business logic: Quick Sale (`frontends/admin-portal/src/views/sales/QuickSaleView.vue`),
@@ -112,7 +113,7 @@ npm run dev        # http://localhost:4321  (service worker disabled in dev)
 npm run build      # static output in dist/ (includes sw.js)
 npm run preview    # serve dist/ (test offline: load once, stop the server, reload)
 npm run check      # astro check + vue-tsc (types)
-npm test           # sync, finance, money, calc, CRM, tax/NSSF, Tong Tin, health, privacy, exchange, clinic (also runs in CI)
+npm test           # sync, finance, money, calc, CRM, tax/NSSF, Tong Tin, health, privacy, exchange, clinic, invoice (also runs in CI)
 ```
 
 Deploy: push to `main` → `.github/workflows/deploy.yml` builds and publishes to GitHub Pages.
