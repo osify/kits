@@ -19,6 +19,7 @@ import QrCode from '@/components/QrCode.vue'
 import PrintSheet from '@/tools/pos/components/PrintSheet.vue'
 import RxDialog from '../components/RxDialog.vue'
 import ClinicDoc from '../components/ClinicDoc.vue'
+import ApptDialog, { type ApptPreset } from '../components/ApptDialog.vue'
 import LevelTag from '../../health/components/LevelTag.vue'
 import { db } from '../db'
 import {
@@ -65,6 +66,26 @@ function setFollow(d: Date | null) {
   follow.value = d
   set('followup_date', d ? today(d) : null)
 }
+// ── Doctor & room, follow-up booking ───────────────────────────────────────
+const doctorOpts = computed(() => [
+  { label: t('cl.sch.anyDoctor'), value: null },
+  ...cl.doctors.filter((d) => d.active || d.id === v.value?.doctor_id).map((d) => ({ label: d.name, value: d.id })),
+])
+const roomOpts = computed(() => [{ label: t('cl.sch.noRoom'), value: null }, ...cl.rooms.filter((r) => r.active || r.id === v.value?.room_id).map((r) => ({ label: r.name, value: r.id }))])
+async function setDoctor(doctorId: string | null) {
+  const room = cl.doctor(doctorId)?.room_id
+  const fillRoom = !!room && !v.value!.room_id
+  v.value!.doctor_id = doctorId
+  if (fillRoom) v.value!.room_id = room!
+  await updateVisit(db, id, fillRoom ? { doctor_id: doctorId, room_id: room } : { doctor_id: doctorId })
+}
+/** Papers show the visit's doctor (else the clinic profile's). */
+const clinicForDoc = computed(() => {
+  const d = cl.doctor(v.value?.doctor_id)
+  return d ? { ...cl.settings, doctor: d.name, license: d.license ?? '' } : cl.settings
+})
+const booking = ref(false)
+const bookPreset = computed<ApptPreset>(() => ({ patient_id: v.value!.patient_id, doctor_id: v.value!.doctor_id, date: v.value!.followup_date ?? undefined, reason: t('cl.followup') }))
 function followIn(days: number) {
   const d = new Date(v.value!.date + 'T00:00:00')
   d.setDate(d.getDate() + days)
@@ -187,6 +208,10 @@ const num = (x: unknown) => (x === null || x === undefined || x === '' ? null : 
       </div>
       <Tag :severity="v.status === 'DONE' ? 'success' : 'warn'" :value="v.status === 'DONE' ? t('cl.seenOne') : t('cl.waiting')" />
     </div>
+    <div v-if="cl.doctors.length || cl.rooms.length" class="grid grid-cols-2 gap-2 sm:max-w-md">
+      <label v-if="cl.doctors.length" class="field"><span>{{ t('cl.sch.doctor') }}</span><Select :model-value="v.doctor_id" :options="doctorOpts" :placeholder="t('cl.sch.anyDoctor')" option-label="label" option-value="value" @update:model-value="setDoctor" /></label>
+      <label v-if="cl.rooms.length" class="field"><span>{{ t('cl.sch.room') }}</span><Select :model-value="v.room_id" :options="roomOpts" :placeholder="t('cl.sch.noRoom')" option-label="label" option-value="value" @update:model-value="(r: string | null) => set('room_id', r)" /></label>
+    </div>
     <p v-if="p.allergies" class="rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-800 dark:bg-red-950/50 dark:text-red-200">
       <i class="pi pi-exclamation-triangle mr-1" />{{ t('hl.allergies') }}: {{ p.allergies }}
     </p>
@@ -290,6 +315,8 @@ const num = (x: unknown) => (x === null || x === undefined || x === '' ? null : 
         <DatePicker :model-value="follow" date-format="yy-mm-dd" show-icon show-clear class="w-44" @update:model-value="(d: any) => setFollow(d)" />
         <Button v-for="n in [3, 7, 14, 30]" :key="n" :label="t('hl.forDays', { n })" size="small" text @click="followIn(n)" />
       </div>
+      <Button :label="t('cl.sch.bookFollowup')" icon="pi pi-calendar-plus" outlined size="small" class="self-start" @click="booking = true" />
+      <p class="text-xs text-[var(--k-muted)]">{{ t('cl.sch.bookFollowupHint') }}</p>
     </section>
 
     <div class="flex flex-wrap gap-2">
@@ -300,6 +327,7 @@ const num = (x: unknown) => (x === null || x === undefined || x === '' ? null : 
       <Button :label="t('cl.deleteVisit')" icon="pi pi-trash" text severity="danger" @click="remove" />
     </div>
 
+    <ApptDialog v-model:open="booking" :preset="bookPreset" @changed="() => {}" />
     <RxDialog v-model:open="rxOpen" :visit-id="id" :item="rxEdit" @saved="load" />
 
     <Dialog v-model:visible="custom.open" modal :header="t('cl.otherFee')" class="w-[min(22rem,calc(100vw-1rem))]">
@@ -331,7 +359,7 @@ const num = (x: unknown) => (x === null || x === undefined || x === '' ? null : 
     <PrintSheet v-model:open="printing" :paper-mm="148">
       <ClinicDoc
         :kind="printKind"
-        :clinic="cl.settings"
+        :clinic="clinicForDoc"
         :patient="p"
         :visit="v"
         :rx="rx"

@@ -20,6 +20,7 @@ const cl = useClinic()
 const appReady = ref(false)
 const nav = computed(() => [
   { to: '/', icon: 'pi pi-list', label: t('cl.nav.today') },
+  { to: '/schedule', icon: 'pi pi-calendar', label: t('cl.nav.schedule') },
   { to: '/patients', icon: 'pi pi-users', label: t('cl.nav.patients') },
   { to: '/prices', icon: 'pi pi-tags', label: t('cl.nav.prices') },
   { to: '/report', icon: 'pi pi-chart-bar', label: t('cl.nav.report') },
@@ -91,7 +92,7 @@ const remind = computed(() => cl.ready && !isWelcome.value && route.path !== '/m
         <p class="mt-8 text-center text-xs text-[var(--k-muted)]">{{ t('cl.disclaimer') }}</p>
       </template>
     </main>
-    <nav v-if="appReady && !isWelcome" class="fixed inset-x-0 bottom-0 z-20 grid grid-cols-5 border-t border-[var(--k-border)] bg-[var(--k-surface)] pb-[env(safe-area-inset-bottom)] md:hidden">
+    <nav v-if="appReady && !isWelcome" class="fixed inset-x-0 bottom-0 z-20 grid grid-cols-6 border-t border-[var(--k-border)] bg-[var(--k-surface)] pb-[env(safe-area-inset-bottom)] md:hidden">
       <RouterLink
         v-for="n in nav"
         :key="n.to"

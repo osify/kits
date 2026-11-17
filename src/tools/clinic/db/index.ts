@@ -42,7 +42,7 @@ export const appLock = createLock('clinic')
 
 /** Delete everything Clinic stored on this device (data, photos, backup key, PIN). */
 export async function wipeClinic() {
-  await db.batch(['visit_line', 'rx_item', 'visit', 'patient', 'service', 'setting'].map((t) => ({ sql: `DELETE FROM ${t}`, bind: [] })))
+  await db.batch(['visit_line', 'rx_item', 'appointment', 'visit', 'patient', 'service', 'doctor', 'room', 'setting'].map((t) => ({ sql: `DELETE FROM ${t}`, bind: [] })))
   await pruneImages('clinic', new Set()).catch(() => 0)
   await clearBackupPassword('clinic').catch(() => {})
   for (const k of ['lastBackupAt', 'lastWriteAt', 'firstUse']) prefs.remove(`clinic.${k}`)

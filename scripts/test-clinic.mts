@@ -4,7 +4,12 @@ import { CLINIC_MIGRATIONS } from '../src/tools/clinic/db/schema.ts'
 import {
   setupClinic, savePatient, listPatients, getPatient, saveService, startVisit, updateVisit, finishVisit, listVisitsOn, listLines, addLine,
   visitTotal, saveRx, listRx, rxPayload, signedRxCode, clinicCard, clinicKey, followupsDue, incomeByDay, patientsCsv, visitsCsv, getVisit, setSetting, deletePatient,
+  saveRoom, saveDoctor, listDoctors, listRooms, saveAppointment, listAppointments, upcomingOf, checkIn, getAppointment, deleteVisit, setAppointmentStatus,
+  visitDoctor, incomeByDoctor,
 } from '../src/tools/clinic/db/data.ts'
+import {
+  addDays, clashes, dayWindow, freeSlots, lanes, normalizeHours, overlaps, weekday, weekStart, withinHours, type Hours, type Slot,
+} from '../src/tools/clinic/schedule.ts'
 import { encodeKx, decodeKx } from '../src/core/exchange/codec.ts'
 import { verifyCode } from '../src/core/exchange/sign.ts'
 import type { DbLike } from '../src/tools/pos/sync/engine.ts'
@@ -92,8 +97,79 @@ check('patients CSV uses the Customers columns and no medical data', pcsv.includ
 const vcsv = await visitsCsv(db, '2026-11-01', '2026-11-30', 'KHR')
 check('visits CSV has fees, not the diagnosis', vcsv.includes('27500') && !/bronchitis/i.test(vcsv))
 
+// ── Schedule rules ──────────────────────────────────────────────────────────
+const H = { '1': [['08:00', '12:00'], ['14:00', '17:00']], '3': [['08:00', '12:00']] } as Hours
+check('weekday of 2026-11-16 is Monday (timezone-proof)', weekday('2026-11-16') === 1 && weekStart('2026-11-19') === '2026-11-16' && addDays('2026-11-30', 1) === '2026-12-01')
+check('within hours: 09:00 30 min on Monday', withinHours(H, '2026-11-16', '09:00', 30))
+check('not within: 11:45 30 min runs past 12:00', !withinHours(H, '2026-11-16', '11:45', 30))
+check('not within: lunch 12:30', !withinHours(H, '2026-11-16', '12:30', 15))
+check('no hours set = any time is fine', withinHours({}, '2026-11-15', '22:00', 30))
+check('overlap: 09:00+30 vs 09:15+15', overlaps({ date: 'd', start: '09:00', minutes: 30 }, { date: 'd', start: '09:15', minutes: 15 }))
+check('back-to-back is not an overlap', !overlaps({ date: 'd', start: '09:00', minutes: 30 }, { date: 'd', start: '09:30', minutes: 15 }))
+const others = [
+  { id: 'x', date: '2026-11-16', start: '09:00', minutes: 30, doctor_id: 'D1', room_id: 'R1', patient_id: 'P9', status: 'BOOKED' },
+  { id: 'y', date: '2026-11-16', start: '10:00', minutes: 30, doctor_id: 'D2', room_id: 'R1', patient_id: 'P8', status: 'BOOKED' },
+  { id: 'z', date: '2026-11-16', start: '11:00', minutes: 30, doctor_id: 'D1', room_id: 'R1', patient_id: 'P7', status: 'CANCELLED' },
+]
+const kinds = (s: Partial<Slot>) => clashes({ date: '2026-11-16', start: '09:00', minutes: 15, ...s } as Slot, others, H).map((c) => c.kind).join()
+check('same doctor at the same time clashes', kinds({ doctor_id: 'D1' }) === 'doctor')
+check('another doctor in the same room clashes on the room', kinds({ doctor_id: 'D3', room_id: 'R1', start: '10:15' }) === 'room')
+check('same patient twice clashes', kinds({ doctor_id: 'D3', patient_id: 'P9' }) === 'patient')
+check('cancelled bookings do not clash', kinds({ doctor_id: 'D1', start: '11:00' }) === '')
+check('editing a booking does not clash with itself', kinds({ id: 'x', doctor_id: 'D1' }) === '')
+check('outside hours / day off are flagged', kinds({ start: '12:30' }) === 'hours' && clashes({ date: '2026-11-17', start: '09:00', minutes: 15 }, [], H)[0]?.kind === 'dayOff')
+const free = freeSlots(H, '2026-11-16', 30, others.filter((o) => o.doctor_id === 'D1'), 30)
+check('free slots skip the booked 09:00 and lunch', free[0] === '08:00' && free[1] === '08:30' && free[2] === '09:30' && !free.includes('12:00') && free.includes('14:00') && free.at(-1) === '16:30', free)
+check('free slots skip times already past', freeSlots(H, '2026-11-16', 30, [], 30, 15 * 60)[0] === '15:00')
+check('calendar window covers hours and late bookings', dayWindow([H], ['2026-11-16'], [{ date: '2026-11-16', start: '18:30', minutes: 30 }]).join() === '480,1140')
+const ln = lanes([{ start: '09:00', minutes: 30 }, { start: '09:15', minutes: 30 }, { start: '10:00', minutes: 15 }])
+check('overlapping blocks get side-by-side lanes', ln[0].of === 2 && ln[1].lane === 1 && ln[2].of === 1 && ln[2].lane === 0, ln)
+check('hours are cleaned and sorted', JSON.stringify(normalizeHours({ '2': [['14:00', '17:00'], ['08:00', '12:00'], ['13:00', '12:00']] } as Hours)) === '{"2":[["08:00","12:00"],["14:00","17:00"]]}')
+
+// ── Doctors, rooms, appointments ────────────────────────────────────────────
+const r1 = await saveRoom(db, { name: 'Room 1' })
+const d1 = await saveDoctor(db, { name: 'Dr Chea Sophal', title: 'Pediatrics', license: 'MD-77', color: '#2563eb', hours: JSON.stringify(H), slot_min: 20, room_id: r1 })
+const d2 = await saveDoctor(db, { name: 'Dr Ly Nary', color: '#db2777' })
+check('doctors and rooms saved', (await listDoctors(db)).length === 2 && (await listRooms(db))[0].name === 'Room 1')
+await saveDoctor(db, { id: d2, name: 'Dr Ly Nary', color: '#db2777', active: 0 })
+check('inactive doctors are hidden unless asked', (await listDoctors(db)).length === 1 && (await listDoctors(db, true)).length === 2)
+
+const ap1 = await saveAppointment(db, { patient_id: b, doctor_id: d1, room_id: r1, date: '2026-11-30', start: '09:00', minutes: 20, reason: 'Fever check' })
+const ap2 = await saveAppointment(db, { patient_id: a, doctor_id: d1, date: '2026-11-30', start: '09:20', minutes: 20 })
+const day30 = await listAppointments(db, '2026-11-30', '2026-11-30')
+check('appointments listed by time with patient', day30.length === 2 && day30[0].id === ap1 && day30[0].code === 'P-0002' && day30[0].status === 'BOOKED')
+check('patient upcoming bookings', (await upcomingOf(db, b, '2026-11-17')).length === 1)
+
+const vq = await checkIn(db, ap1, consult)
+const vis = (await getVisit(db, vq!))!
+check('check-in puts the patient in the queue with doctor, room, reason and fee', vis.doctor_id === d1 && vis.room_id === r1 && vis.complaint === 'Fever check' && vis.status === 'WAITING' && (await listLines(db, vq!)).length === 1)
+check('checking in twice gives the same visit', (await checkIn(db, ap1, consult)) === vq)
+check('booking shows arrived + visit status', (await getAppointment(db, ap1))!.status === 'ARRIVED' && (await getAppointment(db, ap1))!.visit_status === 'WAITING')
+await saveAppointment(db, { id: ap1, patient_id: b, doctor_id: d2, room_id: null, date: '2026-11-30', start: '09:00', minutes: 20 })
+check('moving a checked-in booking moves its visit to the new doctor', (await getVisit(db, vq!))!.doctor_id === d2)
+await deleteVisit(db, vq!)
+check('deleting the visit frees the booking again', (await getAppointment(db, ap1))!.status === 'BOOKED' && (await getAppointment(db, ap1))!.visit_id === null)
+await setAppointmentStatus(db, ap2, 'NO_SHOW')
+check('no-show is kept for the record', (await getAppointment(db, ap2))!.status === 'NO_SHOW')
+
+// prescription shows the visit's doctor
+await updateVisit(db, v1, { doctor_id: d1 })
+const pd = (await rxPayload(db, v1, { includeName: false }))!
+check('prescription carries the visit doctor, not the profile doctor', pd.doctor === 'Dr Chea Sophal' && (await visitDoctor(db, { doctor_id: null })).name === 'Dr Sok Dara')
+const byDoc = await incomeByDoctor(db, '2026-11-01', '2026-11-30')
+check('income by doctor', byDoc.find((x) => x.doctor_id === d1)?.billed === 27_500 && byDoc.some((x) => x.doctor_id === null), byDoc)
+check('visits CSV has the doctor column', (await visitsCsv(db, '2026-11-17', '2026-11-17', 'KHR')).includes('Dr Chea Sophal'))
+
+// follow-up hidden once a booking exists
+const v3 = await startVisit(db, b, '2026-12-01')
+await updateVisit(db, v3, { followup_date: '2026-12-05' })
+check('follow-up due without a booking', (await followupsDue(db, '2026-12-06')).some((x) => x.id === v3))
+await saveAppointment(db, { patient_id: b, doctor_id: d1, date: '2026-12-07', start: '08:00', minutes: 20 })
+check('follow-up leaves the list once booked', !(await followupsDue(db, '2026-12-06')).some((x) => x.id === v3))
+
 await deletePatient(db, a)
 check('deleting a patient removes their visits', (await getVisit(db, v1)) === undefined && (await listVisitsOn(db, '2026-11-17')).length === 1)
+check('…and their appointments', (await getAppointment(db, ap2)) === undefined)
 
 console.log(failures ? `\n${failures} FAILED` : '\nALL PASSED')
 process.exit(failures ? 1 : 0)

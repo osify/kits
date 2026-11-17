@@ -57,6 +57,8 @@ export interface Visit {
   pay_method: string | null
   rx_id: string | null
   done_at: number | null
+  doctor_id: string | null
+  room_id: string | null
   created_at: number
 }
 export interface VisitLine {
@@ -160,6 +162,7 @@ export async function deletePatient(db: DbLike, id: string) {
     { sql: `DELETE FROM visit_line WHERE visit_id IN (SELECT id FROM visit WHERE patient_id = ?)`, bind: [id] },
     { sql: `DELETE FROM rx_item WHERE visit_id IN (SELECT id FROM visit WHERE patient_id = ?)`, bind: [id] },
     { sql: `DELETE FROM visit WHERE patient_id = ?`, bind: [id] },
+    { sql: `DELETE FROM appointment WHERE patient_id = ?`, bind: [id] },
     { sql: `DELETE FROM patient WHERE id = ?`, bind: [id] },
   ])
 }
@@ -183,11 +186,15 @@ export async function saveService(db: DbLike, s: Partial<Service> & { name: stri
 // ── Visits ──────────────────────────────────────────────────────────────────
 
 /** Start a visit: next queue number of the day, status WAITING. Adds the default consultation fee if set. */
-export async function startVisit(db: DbLike, patientId: string, date: string, consultServiceId?: string | null): Promise<string> {
+export async function startVisit(
+  db: DbLike, patientId: string, date: string, consultServiceId?: string | null, at: { doctor_id?: string | null; room_id?: string | null } = {},
+): Promise<string> {
   const t = now()
   const id = ulid()
   const q = await db.get<{ n: number }>(`SELECT COALESCE(MAX(queue_no), 0) + 1 AS n FROM visit WHERE date = ?`, [date])
-  await db.run(`INSERT INTO visit (id, patient_id, date, queue_no, status, discount, paid, created_at, updated_at) VALUES (?,?,?,?,'WAITING',0,0,?,?)`, [id, patientId, date, q?.n ?? 1, t, t])
+  await db.run(`INSERT INTO visit (id, patient_id, date, queue_no, status, discount, paid, doctor_id, room_id, created_at, updated_at) VALUES (?,?,?,?,'WAITING',0,0,?,?,?,?)`, [
+    id, patientId, date, q?.n ?? 1, at.doctor_id ?? null, at.room_id ?? null, t, t,
+  ])
   if (consultServiceId) {
     const s = await db.get<Service>(`SELECT * FROM service WHERE id = ?`, [consultServiceId])
     if (s) await addLine(db, id, { service_id: s.id, name: s.name, qty: 1, price: s.price })
@@ -198,7 +205,7 @@ export function getVisit(db: DbLike, id: string) {
   return db.get<Visit>(`SELECT * FROM visit WHERE id = ?`, [id])
 }
 type VisitFields = Partial<Omit<Visit, 'id' | 'patient_id' | 'queue_no' | 'created_at'>>
-const VISIT_COLS = ['date', 'status', 'complaint', 'bp_sys', 'bp_dia', 'pulse', 'temp', 'weight', 'spo2', 'glucose', 'exam', 'diagnosis', 'plan', 'followup_date', 'discount', 'paid', 'pay_method', 'rx_id', 'done_at'] as const
+const VISIT_COLS = ['date', 'status', 'complaint', 'bp_sys', 'bp_dia', 'pulse', 'temp', 'weight', 'spo2', 'glucose', 'exam', 'diagnosis', 'plan', 'followup_date', 'discount', 'paid', 'pay_method', 'rx_id', 'done_at', 'doctor_id', 'room_id'] as const
 /** Save some fields of a visit (each field is saved as it is typed). */
 export async function updateVisit(db: DbLike, id: string, f: VisitFields) {
   const cols = VISIT_COLS.filter((c) => c in f)
@@ -210,6 +217,7 @@ export async function finishVisit(db: DbLike, id: string, done: boolean) {
 }
 export async function deleteVisit(db: DbLike, id: string) {
   await db.batch([
+    { sql: `UPDATE appointment SET status = 'BOOKED', visit_id = NULL, updated_at = ? WHERE visit_id = ?`, bind: [now(), id] },
     { sql: `DELETE FROM visit_line WHERE visit_id = ?`, bind: [id] },
     { sql: `DELETE FROM rx_item WHERE visit_id = ?`, bind: [id] },
     { sql: `DELETE FROM visit WHERE id = ?`, bind: [id] },
@@ -221,12 +229,13 @@ export function listVisitsOn(db: DbLike, date: string) {
 export function listVisitsOf(db: DbLike, patientId: string) {
   return db.query<VisitRow>(`SELECT v.*, p.name, p.code, ${TOTAL} AS total FROM visit v JOIN patient p ON p.id = v.patient_id WHERE v.patient_id = ? ORDER BY v.date DESC, v.queue_no DESC`, [patientId])
 }
-/** Patients whose latest visit asked for a follow-up on or before `until` and who have not come back since. */
+/** Patients whose latest visit asked for a follow-up on or before `until`, who have not come back since and have no booking. */
 export function followupsDue(db: DbLike, until: string) {
   return db.query<VisitRow>(
     `SELECT v.*, p.name, p.code, ${TOTAL} AS total FROM visit v JOIN patient p ON p.id = v.patient_id
      WHERE v.followup_date IS NOT NULL AND v.followup_date <= ?
        AND NOT EXISTS (SELECT 1 FROM visit v2 WHERE v2.patient_id = v.patient_id AND v2.date > v.date)
+       AND NOT EXISTS (SELECT 1 FROM appointment a WHERE a.patient_id = v.patient_id AND a.date > v.date AND a.status IN ('BOOKED','ARRIVED'))
      ORDER BY v.followup_date`,
     [until],
   )
@@ -293,6 +302,7 @@ export async function rxPayload(db: DbLike, visitId: string, opts: { includeName
   }
   const p = (await getPatient(db, v.patient_id))!
   const s = await getSettings(db)
+  const doc = await visitDoctor(db, v)
   const age = p.birth_date ? Math.floor((Date.parse(v.date) - Date.parse(p.birth_date)) / 31_557_600_000) : undefined
   const out: RxPayload = {
     v: 1,
@@ -311,12 +321,141 @@ export async function rxPayload(db: DbLike, visitId: string, opts: { includeName
       return it
     }),
   }
-  if (s.doctor) out.doctor = s.doctor
+  if (doc.name) out.doctor = doc.name
   if (s.phone) out.phone = s.phone
   if (opts.includeName) out.name = p.name
   if (age !== undefined && age >= 0) out.age = age
   if (p.sex) out.sex = p.sex
   return out
+}
+
+/** Doctor printed on a visit's papers: the visit's doctor, else the clinic profile's doctor. */
+export async function visitDoctor(db: DbLike, v: Pick<Visit, 'doctor_id'>): Promise<{ name: string; license: string }> {
+  const d = v.doctor_id ? await db.get<Doctor>(`SELECT * FROM doctor WHERE id = ?`, [v.doctor_id]) : undefined
+  if (d) return { name: d.name, license: d.license ?? '' }
+  const s = await getSettings(db)
+  return { name: s.doctor ?? '', license: s.license ?? '' }
+}
+
+// ── Doctors, rooms, appointments ────────────────────────────────────────────
+
+export interface Doctor {
+  id: string
+  name: string
+  title: string | null
+  license: string | null
+  phone: string | null
+  color: string
+  hours: string // JSON, see schedule.ts Hours
+  slot_min: number
+  room_id: string | null
+  active: number
+  sort: number
+}
+export interface Room {
+  id: string
+  name: string
+  active: number
+  sort: number
+}
+export type ApptStatus = 'BOOKED' | 'ARRIVED' | 'CANCELLED' | 'NO_SHOW'
+export interface Appointment {
+  id: string
+  patient_id: string
+  doctor_id: string | null
+  room_id: string | null
+  date: string
+  start: string
+  minutes: number
+  reason: string | null
+  note: string | null
+  status: ApptStatus
+  visit_id: string | null
+  created_at: number
+}
+export interface ApptRow extends Appointment {
+  name: string
+  code: string
+  phone: string | null
+  visit_status: 'WAITING' | 'DONE' | null
+  queue_no: number | null
+}
+
+export function listDoctors(db: DbLike, all = false) {
+  return db.query<Doctor>(`SELECT * FROM doctor ${all ? '' : 'WHERE active = 1'} ORDER BY active DESC, sort, name`)
+}
+export async function saveDoctor(db: DbLike, d: Partial<Doctor> & { name: string; color: string }) {
+  const t = now()
+  const v = [d.name.trim(), clean(d.title), clean(d.license), clean(d.phone), d.color, d.hours ?? '{}', d.slot_min ?? 15, d.room_id || null, d.active ?? 1]
+  if (d.id) {
+    await db.run(`UPDATE doctor SET name=?, title=?, license=?, phone=?, color=?, hours=?, slot_min=?, room_id=?, active=?, updated_at=? WHERE id=?`, [...v, t, d.id])
+    return d.id
+  }
+  const id = ulid()
+  const s = await db.get<{ s: number }>(`SELECT COALESCE(MAX(sort), -1) + 1 AS s FROM doctor`)
+  await db.run(`INSERT INTO doctor (name, title, license, phone, color, hours, slot_min, room_id, active, id, sort, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`, [...v, id, s?.s ?? 0, t, t])
+  return id
+}
+export function listRooms(db: DbLike, all = false) {
+  return db.query<Room>(`SELECT * FROM room ${all ? '' : 'WHERE active = 1'} ORDER BY active DESC, sort, name`)
+}
+export async function saveRoom(db: DbLike, r: Partial<Room> & { name: string }) {
+  const t = now()
+  if (r.id) {
+    await db.run(`UPDATE room SET name=?, active=?, updated_at=? WHERE id=?`, [r.name.trim(), r.active ?? 1, t, r.id])
+    return r.id
+  }
+  const id = ulid()
+  const s = await db.get<{ s: number }>(`SELECT COALESCE(MAX(sort), -1) + 1 AS s FROM room`)
+  await db.run(`INSERT INTO room (id, name, active, sort, created_at, updated_at) VALUES (?,?,1,?,?,?)`, [id, r.name.trim(), s?.s ?? 0, t, t])
+  return id
+}
+
+const APPT = `SELECT a.*, p.name, p.code, p.phone, v.status AS visit_status, v.queue_no FROM appointment a JOIN patient p ON p.id = a.patient_id LEFT JOIN visit v ON v.id = a.visit_id`
+/** Appointments from..to (inclusive), all statuses, by date and time. */
+export function listAppointments(db: DbLike, from: string, to: string) {
+  return db.query<ApptRow>(`${APPT} WHERE a.date BETWEEN ? AND ? ORDER BY a.date, a.start`, [from, to])
+}
+/** A patient's appointments from `from` on (booked or arrived). */
+export function upcomingOf(db: DbLike, patientId: string, from: string) {
+  return db.query<ApptRow>(`${APPT} WHERE a.patient_id = ? AND a.date >= ? AND a.status IN ('BOOKED','ARRIVED') ORDER BY a.date, a.start`, [patientId, from])
+}
+export function getAppointment(db: DbLike, id: string) {
+  return db.get<ApptRow>(`${APPT} WHERE a.id = ?`, [id])
+}
+export type ApptFields = Pick<Appointment, 'patient_id' | 'date' | 'start' | 'minutes'> & Partial<Pick<Appointment, 'id' | 'doctor_id' | 'room_id' | 'reason' | 'note'>>
+export async function saveAppointment(db: DbLike, a: ApptFields): Promise<string> {
+  const t = now()
+  const v = [a.patient_id, a.doctor_id || null, a.room_id || null, a.date, a.start, a.minutes, clean(a.reason), clean(a.note)]
+  if (a.id) {
+    await db.run(`UPDATE appointment SET patient_id=?, doctor_id=?, room_id=?, date=?, start=?, minutes=?, reason=?, note=?, updated_at=? WHERE id=?`, [...v, t, a.id])
+    // a checked-in booking moves its visit to the new doctor/room too
+    await db.run(`UPDATE visit SET doctor_id = ?, room_id = ?, updated_at = ? WHERE id = (SELECT visit_id FROM appointment WHERE id = ?)`, [a.doctor_id || null, a.room_id || null, t, a.id])
+    return a.id
+  }
+  const id = ulid()
+  await db.run(`INSERT INTO appointment (patient_id, doctor_id, room_id, date, start, minutes, reason, note, id, status, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,'BOOKED',?,?)`, [...v, id, t, t])
+  return id
+}
+/** Cancelled / no-show / back to booked. A checked-in booking keeps its visit (delete the visit instead). */
+export async function setAppointmentStatus(db: DbLike, id: string, status: Exclude<ApptStatus, 'ARRIVED'>) {
+  await db.run(`UPDATE appointment SET status = ?, updated_at = ? WHERE id = ? AND visit_id IS NULL`, [status, now(), id])
+}
+export async function deleteAppointment(db: DbLike, id: string) {
+  await db.run(`DELETE FROM appointment WHERE id = ?`, [id])
+}
+/**
+ * The patient has arrived: put them in the queue of the booking's day with its doctor and room
+ * (and the default fee). Checking in twice returns the same visit.
+ */
+export async function checkIn(db: DbLike, id: string, consultServiceId?: string | null): Promise<string | null> {
+  const a = await db.get<Appointment>(`SELECT * FROM appointment WHERE id = ?`, [id])
+  if (!a) return null
+  if (a.visit_id && (await getVisit(db, a.visit_id))) return a.visit_id
+  const vid = await startVisit(db, a.patient_id, a.date, consultServiceId, { doctor_id: a.doctor_id, room_id: a.room_id })
+  if (a.reason) await updateVisit(db, vid, { complaint: a.reason })
+  await db.run(`UPDATE appointment SET status = 'ARRIVED', visit_id = ?, updated_at = ? WHERE id = ?`, [vid, now(), id])
+  return vid
 }
 
 // ── Signing (prescriptions and the clinic card) ─────────────────────────────
@@ -365,6 +504,20 @@ export function incomeByDay(db: DbLike, from: string, to: string) {
   )
 }
 
+export interface DoctorIncome {
+  doctor_id: string | null
+  visits: number
+  billed: number
+  received: number
+}
+export function incomeByDoctor(db: DbLike, from: string, to: string) {
+  return db.query<DoctorIncome>(
+    `SELECT v.doctor_id, COUNT(*) AS visits, COALESCE(SUM(${TOTAL}), 0) AS billed, COALESCE(SUM(v.paid), 0) AS received
+     FROM visit v WHERE v.date BETWEEN ? AND ? GROUP BY v.doctor_id ORDER BY billed DESC`,
+    [from, to],
+  )
+}
+
 const esc = (v: unknown) => {
   const s = v == null ? '' : String(v)
   return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
@@ -377,8 +530,12 @@ export async function patientsCsv(db: DbLike): Promise<string> {
 }
 /** Visits with fees for accounting (no complaint/diagnosis). */
 export async function visitsCsv(db: DbLike, from: string, to: string, currency: 'KHR' | 'USD'): Promise<string> {
-  const rows = await db.query<VisitRow>(`SELECT v.*, p.name, p.code, ${TOTAL} AS total FROM visit v JOIN patient p ON p.id = v.patient_id WHERE v.date BETWEEN ? AND ? ORDER BY v.date, v.queue_no`, [from, to])
+  const rows = await db.query<VisitRow & { doctor: string | null }>(
+    `SELECT v.*, p.name, p.code, ${TOTAL} AS total, d.name AS doctor FROM visit v JOIN patient p ON p.id = v.patient_id LEFT JOIN doctor d ON d.id = v.doctor_id
+     WHERE v.date BETWEEN ? AND ? ORDER BY v.date, v.queue_no`,
+    [from, to],
+  )
   const num = (v: number) => (currency === 'KHR' ? String(v) : (v / 100).toFixed(2))
-  const head = ['date', 'queue', 'patient_code', 'patient', 'status', 'total', 'paid', 'owing', 'method']
-  return '﻿' + [head.join(','), ...rows.map((r) => [r.date, r.queue_no, r.code, r.name, r.status, num(r.total), num(r.paid), num(Math.max(0, r.total - r.paid)), r.pay_method].map(esc).join(','))].join('\r\n') + '\r\n'
+  const head = ['date', 'queue', 'patient_code', 'patient', 'status', 'total', 'paid', 'owing', 'method', 'doctor']
+  return '﻿' + [head.join(','), ...rows.map((r) => [r.date, r.queue_no, r.code, r.name, r.status, num(r.total), num(r.paid), num(Math.max(0, r.total - r.paid)), r.pay_method, r.doctor].map(esc).join(','))].join('\r\n') + '\r\n'
 }

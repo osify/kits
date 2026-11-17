@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import Button from 'primevue/button'
 import DatePicker from 'primevue/datepicker'
 import { db } from '../db'
-import { incomeByDay, visitsCsv, type DayIncome } from '../db/data'
+import { incomeByDay, incomeByDoctor, visitsCsv, type DayIncome, type DoctorIncome } from '../db/data'
 import { useClinic } from '../store'
 import { formatMoney } from '@/core/util/money'
 import { today } from '@/core/util/date'
@@ -20,7 +20,10 @@ const range = computed(() => {
   return { from, to }
 })
 const rows = ref<DayIncome[]>([])
-const load = async () => (rows.value = await incomeByDay(db, range.value.from, range.value.to))
+const byDoctor = ref<DoctorIncome[]>([])
+const load = async () => {
+  ;[rows.value, byDoctor.value] = await Promise.all([incomeByDay(db, range.value.from, range.value.to), incomeByDoctor(db, range.value.from, range.value.to)])
+}
 onMounted(load)
 watch(range, load)
 const m = (v: number) => formatMoney(v, cl.currency)
@@ -55,6 +58,28 @@ async function exportCsv() {
         <div class="text-xs text-[var(--k-muted)]">{{ t('cl.unpaid') }}</div>
         <div class="text-lg font-semibold tabular-nums" :class="sum.billed > sum.received ? 'text-amber-700 dark:text-amber-400' : ''">{{ m(Math.max(0, sum.billed - sum.received)) }}</div>
       </div>
+    </div>
+    <div v-if="byDoctor.length > 1 || byDoctor.some((d) => d.doctor_id)" class="card overflow-x-auto !p-0">
+      <table class="w-full text-sm whitespace-nowrap tabular-nums">
+        <thead class="text-left text-[var(--k-muted)]">
+          <tr>
+            <th class="px-3 py-2 font-normal">{{ t('cl.sch.doctor') }}</th>
+            <th class="py-2 text-right font-normal">{{ t('cl.visitsLabel') }}</th>
+            <th class="py-2 text-right font-normal">{{ t('cl.billed') }}</th>
+            <th class="px-3 py-2 text-right font-normal">{{ t('cl.received') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="d in byDoctor" :key="d.doctor_id ?? '_'" class="border-t border-[var(--k-border)]">
+            <td class="px-3 py-2">
+              <span class="mr-1.5 inline-block size-2 rounded-full" :style="{ background: cl.doctor(d.doctor_id)?.color ?? '#64748b' }" />{{ cl.doctor(d.doctor_id)?.name ?? t('cl.sch.anyDoctor') }}
+            </td>
+            <td class="py-2 text-right">{{ d.visits }}</td>
+            <td class="py-2 text-right">{{ m(d.billed) }}</td>
+            <td class="px-3 py-2 text-right">{{ m(d.received) }}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
     <div class="card overflow-x-auto !p-0">
       <table class="w-full text-sm whitespace-nowrap tabular-nums">

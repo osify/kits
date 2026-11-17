@@ -11,6 +11,8 @@ const router = createRouter({
   routes: [
     { path: '/', name: 'today', component: () => import('./views/TodayView.vue') },
     { path: '/welcome', name: 'welcome', component: () => import('./views/WelcomeView.vue') },
+    { path: '/schedule', name: 'schedule', component: () => import('./views/ScheduleView.vue') },
+    { path: '/schedule/setup', name: 'schedule-setup', component: () => import('./views/ScheduleSetupView.vue') },
     { path: '/patients', name: 'patients', component: () => import('./views/PatientsView.vue') },
     { path: '/p/:id', name: 'patient', component: () => import('./views/PatientView.vue') },
     { path: '/v/:id', name: 'visit', component: () => import('./views/VisitView.vue') },

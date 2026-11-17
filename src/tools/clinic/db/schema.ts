@@ -96,4 +96,56 @@ CREATE TABLE rx_item (
 );
 `,
   },
+  {
+    version: 2,
+    description: 'Doctors (weekly hours), rooms, appointments; doctor and room on visits',
+    sql: `
+CREATE TABLE doctor (
+  id          TEXT PRIMARY KEY,
+  name        TEXT NOT NULL,
+  title       TEXT,                    -- specialty, e.g. Pediatrics
+  license     TEXT,
+  phone       TEXT,
+  color       TEXT NOT NULL,
+  hours       TEXT NOT NULL DEFAULT '{}', -- weekly hours JSON: {"1":[["08:00","12:00"],["14:00","17:00"]]}, 0 = Sunday
+  slot_min    INTEGER NOT NULL DEFAULT 15,
+  room_id     TEXT,                    -- usual room
+  active      INTEGER NOT NULL DEFAULT 1,
+  sort        INTEGER NOT NULL DEFAULT 0,
+  created_at  INTEGER NOT NULL,
+  updated_at  INTEGER NOT NULL
+);
+
+CREATE TABLE room (
+  id          TEXT PRIMARY KEY,
+  name        TEXT NOT NULL,
+  active      INTEGER NOT NULL DEFAULT 1,
+  sort        INTEGER NOT NULL DEFAULT 0,
+  created_at  INTEGER NOT NULL,
+  updated_at  INTEGER NOT NULL
+);
+
+-- Booked visits. Check-in turns a booking into a visit in the day's queue (visit_id).
+CREATE TABLE appointment (
+  id          TEXT PRIMARY KEY,
+  patient_id  TEXT NOT NULL REFERENCES patient(id) ON DELETE CASCADE,
+  doctor_id   TEXT,
+  room_id     TEXT,
+  date        TEXT NOT NULL,
+  start       TEXT NOT NULL,           -- 'HH:MM' local
+  minutes     INTEGER NOT NULL,
+  reason      TEXT,
+  note        TEXT,
+  status      TEXT NOT NULL CHECK (status IN ('BOOKED','ARRIVED','CANCELLED','NO_SHOW')),
+  visit_id    TEXT,
+  created_at  INTEGER NOT NULL,
+  updated_at  INTEGER NOT NULL
+);
+CREATE INDEX appointment_day ON appointment(date, start);
+CREATE INDEX appointment_patient ON appointment(patient_id, date);
+
+ALTER TABLE visit ADD COLUMN doctor_id TEXT;
+ALTER TABLE visit ADD COLUMN room_id TEXT;
+`,
+  },
 ]
