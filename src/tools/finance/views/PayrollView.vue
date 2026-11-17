@@ -11,8 +11,8 @@ import AmountField from '@/components/AmountField.vue'
 import Stat from '../components/Stat.vue'
 import RatesNote from '../components/RatesNote.vue'
 import { persisted } from '../state'
-import { payroll } from '../tax'
-import { DEPENDENT_ALLOWANCE } from '../rates'
+import { grossForNet, payroll } from '../tax'
+import { DEPENDENT_ALLOWANCE, EFILING_DAY, FILING_DAY, PENSION_FUND_FREE_PCT, SENIORITY_EXEMPT_HALF, SENIORITY_EXEMPT_YEAR } from '../rates'
 import { formatMoney } from '@/core/util/money'
 import { today } from '@/core/util/date'
 
@@ -28,7 +28,22 @@ const f = persisted('payroll', {
   spouse: false,
   nssfCovered: true,
   fringe: 0,
+  mode: 'gross' as 'gross' | 'net',
+  wantNet: 0,
+  more: false,
+  bonus: 0,
+  seniority: 0,
+  seniorityTimes: 2 as 1 | 2,
+  pensionFund: 0,
 })
+const modeOpts = computed(() => [
+  { label: t('fin.tax.fromSalary'), value: 'gross' },
+  { label: t('fin.tax.fromNet'), value: 'net' },
+])
+const timesOpts = computed(() => [
+  { label: t('fin.tax.twiceYear'), value: 2 },
+  { label: t('fin.tax.onceYear'), value: 1 },
+])
 const curOpts = [
   { label: '៛ KHR', value: 'KHR' },
   { label: '$ USD', value: 'USD' },
@@ -38,8 +53,14 @@ const monthDate = computed({
   set: (d: Date) => (f.month = today(d).slice(0, 7)),
 })
 /** Salary in riel: USD salaries convert at the NBC rate of the 15th of the month (GDT rule). */
-const grossKhr = computed(() => (f.currency === 'KHR' ? f.salary : Math.round((f.salary / 100) * (f.rate || 4100))))
-const r = computed(() => payroll({ gross: grossKhr.value, month: f.month, resident: f.resident, children: f.children || 0, spouse: f.spouse, fringe: f.fringe, nssfCovered: f.nssfCovered }))
+const toKhr = (v: number) => (f.currency === 'KHR' ? v : Math.round((v / 100) * (f.rate || 4100)))
+const extras = computed(() => ({
+  month: f.month, resident: f.resident, children: f.children || 0, spouse: f.spouse, fringe: f.fringe, nssfCovered: f.nssfCovered,
+  bonus: f.more ? toKhr(f.bonus) : 0, seniority: f.more ? toKhr(f.seniority) : 0, seniorityTimes: f.seniorityTimes, pensionFund: f.more ? toKhr(f.pensionFund) : 0,
+}))
+/** Salary in riel; in "take-home" mode it is the salary that gives the wanted net pay. */
+const grossKhr = computed(() => (f.mode === 'net' ? grossForNet(toKhr(f.wantNet), extras.value) : toKhr(f.salary)))
+const r = computed(() => payroll({ gross: grossKhr.value, ...extras.value }))
 const m = (v: number) => formatMoney(v, 'KHR')
 const usd = (v: number) => (f.currency === 'USD' ? ` · ${formatMoney(Math.round((v / (f.rate || 4100)) * 100), 'USD')}` : '')
 const pct = (v: number) => `${v % 1 ? v.toFixed(1) : v}%`
@@ -50,10 +71,12 @@ const printPage = () => window.print()
 <template>
   <div class="grid gap-5 lg:grid-cols-[22rem_1fr]">
     <section class="no-print card flex flex-col gap-3 lg:self-start">
+      <SelectButton v-model="f.mode" :options="modeOpts" option-label="label" option-value="value" :allow-empty="false" size="small" />
       <div class="field">
-        <span>{{ t('fin.tax.salary') }}</span>
+        <span>{{ f.mode === 'net' ? t('fin.tax.wantNet') : t('fin.tax.salary') }}</span>
         <div class="flex gap-2">
-          <AmountField v-model="f.salary" :currency="f.currency" class="flex-1" />
+          <AmountField v-if="f.mode === 'net'" v-model="f.wantNet" :currency="f.currency" class="flex-1" />
+          <AmountField v-else v-model="f.salary" :currency="f.currency" class="flex-1" />
           <SelectButton v-model="f.currency" :options="curOpts" option-label="label" option-value="value" :allow-empty="false" size="small" />
         </div>
       </div>
@@ -78,6 +101,25 @@ const printPage = () => window.print()
         <AmountField v-model="f.fringe" currency="KHR" />
         <small class="text-[var(--k-muted)]">{{ t('fin.tax.fringeHint') }}</small>
       </label>
+      <label class="flex items-center gap-2 text-sm"><ToggleSwitch v-model="f.more" /> {{ t('fin.tax.morePay') }}</label>
+      <template v-if="f.more">
+        <label class="field">
+          <span>{{ t('fin.tax.bonus') }} ({{ f.currency }})</span>
+          <AmountField v-model="f.bonus" :currency="f.currency" />
+          <small class="text-[var(--k-muted)]">{{ t('fin.tax.bonusHint') }}</small>
+        </label>
+        <label class="field">
+          <span>{{ t('fin.tax.seniority') }} ({{ f.currency }})</span>
+          <AmountField v-model="f.seniority" :currency="f.currency" />
+          <SelectButton v-model="f.seniorityTimes" :options="timesOpts" option-label="label" option-value="value" :allow-empty="false" size="small" />
+          <small class="text-[var(--k-muted)]">{{ t('fin.tax.seniorityHint', { year: m(SENIORITY_EXEMPT_YEAR), half: m(SENIORITY_EXEMPT_HALF) }) }}</small>
+        </label>
+        <label class="field">
+          <span>{{ t('fin.tax.pensionFund') }} ({{ f.currency }})</span>
+          <AmountField v-model="f.pensionFund" :currency="f.currency" />
+          <small class="text-[var(--k-muted)]">{{ t('fin.tax.pensionFundHint', { pct: PENSION_FUND_FREE_PCT }) }}</small>
+        </label>
+      </template>
     </section>
 
     <section class="flex flex-col gap-4">
@@ -94,10 +136,20 @@ const printPage = () => window.print()
         </div>
         <dl class="grid grid-cols-[1fr_auto] gap-y-1.5 text-sm tabular-nums">
           <dt>{{ t('fin.tax.salary') }}</dt><dd class="text-right">{{ m(grossKhr) }}{{ usd(grossKhr) }}</dd>
-          <template v-if="r.tax.allowances">
-            <dt class="text-[var(--k-muted)]">{{ t('fin.tax.allowances') }}</dt><dd class="text-right text-[var(--k-muted)]">−{{ m(r.tax.allowances) }}</dd>
+          <template v-if="extras.bonus">
+            <dt>{{ t('fin.tax.bonus') }}</dt><dd class="text-right">{{ m(extras.bonus) }}</dd>
           </template>
-          <dt class="text-[var(--k-muted)]">{{ t('fin.tax.taxBase') }}</dt><dd class="text-right text-[var(--k-muted)]">{{ m(r.tax.base) }}</dd>
+          <template v-if="extras.seniority">
+            <dt>{{ t('fin.tax.seniority') }}</dt><dd class="text-right">{{ m(extras.seniority) }}</dd>
+            <dt class="pl-3 text-[var(--k-muted)]">{{ t('fin.tax.seniorityExempt') }}</dt><dd class="text-right text-[var(--k-muted)]">−{{ m(r.seniority.exempt) }}</dd>
+          </template>
+          <template v-if="r.tax.pension">
+            <dt class="pl-3 text-[var(--k-muted)]">{{ t('fin.tax.pensionOff') }}</dt><dd class="text-right text-[var(--k-muted)]">−{{ m(r.tax.pension) }}</dd>
+          </template>
+          <template v-if="r.tax.allowances">
+            <dt class="pl-3 text-[var(--k-muted)]">{{ t('fin.tax.allowances') }}</dt><dd class="text-right text-[var(--k-muted)]">−{{ m(r.tax.allowances) }}</dd>
+          </template>
+          <dt class="pl-3 text-[var(--k-muted)]">{{ t('fin.tax.taxBase') }}</dt><dd class="text-right text-[var(--k-muted)]">{{ m(r.tax.base) }}</dd>
           <dt>{{ t('fin.tax.salaryTax') }}</dt><dd class="text-right">−{{ m(r.tax.tax) }}</dd>
           <template v-if="r.nssf">
             <dt>{{ t('fin.tax.pensionEmployee', { pct: pct(r.nssf.rule.pensionEmployee) }) }}</dt><dd class="text-right">−{{ m(r.nssf.pensionEmployee) }}</dd>
@@ -141,9 +193,12 @@ const printPage = () => window.print()
         </dl>
       </div>
 
-      <div v-if="r.fbt" class="card text-sm">
-        <div class="flex justify-between"><span>{{ t('fin.tax.fbt') }}</span><b class="tabular-nums">{{ m(r.fbt) }}</b></div>
+      <div v-if="r.fbt" class="card flex flex-col gap-1 text-sm tabular-nums">
+        <div v-if="f.fringe" class="flex justify-between"><span>{{ t('fin.tax.fringe') }}</span><span>{{ m(f.fringe) }}</span></div>
+        <div v-if="r.pensionFund.excess" class="flex justify-between"><span>{{ t('fin.tax.pensionFundExcess', { pct: PENSION_FUND_FREE_PCT }) }}</span><span>{{ m(r.pensionFund.excess) }}</span></div>
+        <div class="flex justify-between border-t border-[var(--k-border)] pt-1"><span>{{ t('fin.tax.fbt') }}</span><b>{{ m(r.fbt) }}</b></div>
       </div>
+      <p class="text-sm"><i class="pi pi-calendar mr-1" />{{ t('fin.tax.deadline', { day: FILING_DAY, eday: EFILING_DAY }) }}</p>
 
       <Message severity="secondary" :closable="false" class="text-sm">{{ t('fin.tax.disclaimer') }}</Message>
       <RatesNote />

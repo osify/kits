@@ -3,13 +3,14 @@
  * ⚠ Rates change by law / prakas. Update this file (and CHECKED) when they do; the screens
  * show CHECKED and the sources. All amounts in riel.
  */
-export const CHECKED = '2026-11-16'
+export const CHECKED = '2026-11-17'
 
 export const SOURCES = [
   { label: 'GDT Tax on Salary (resident brackets, 150,000 ៛ allowances)', url: 'https://cambodia.acclime.com/guides/personal-income-tax/' },
   { label: 'NSSF Prakas 234/26: wage base 600,000–1,500,000 ៛', url: 'https://www.hrforte.com/taxtok-hrforte/cambodia-nssf-ceiling-rises-to-khr-1.5-million-what-changes-on-your-payroll' },
   { label: 'NSSF profile (pension phases)', url: 'https://www.asean-ssa.org/files/Organisation%20Profiles/CambodiaNSSFProfile.pdf' },
   { label: 'Withholding tax rates', url: 'https://emerhub.com/cambodia/withholding-tax-in-cambodia/' },
+  { label: 'GDT National School of Taxation: Tax on Salary (2023), tax base = salary − NSSF/labour-law contributions − exempt pay', url: 'https://www.tax.gov.kh' },
   { label: 'GDT: General Department of Taxation', url: 'https://www.tax.gov.kh' },
   { label: 'NSSF: National Social Security Fund', url: 'https://www.nssf.gov.kh' },
 ]
@@ -26,8 +27,19 @@ export const SALARY_BANDS: { upTo: number; rate: number }[] = [
 export const DEPENDENT_ALLOWANCE = 150_000
 export const NON_RESIDENT_RATE = 20
 export const FRINGE_BENEFIT_RATE = 20
-/** Employee NSSF pension contributions do not reduce the salary-tax base (per most guidance; confirm with GDT). */
-export const PENSION_DEDUCTIBLE = false
+/**
+ * Tax base = taxable salary − contributions withheld under the Labour Law and the Social Security
+ * Law (the employee's NSSF pension share) − exempt payments (GDT, Tax on Salary 2023, slide 16).
+ */
+export const PENSION_DEDUCTIBLE = true
+/** Seniority indemnity (since 2020, Circular 002 MEF): exempt up to 4,000,000 ៛ a year; paid twice a year, up to 2,000,000 ៛ each time. */
+export const SENIORITY_EXEMPT_YEAR = 4_000_000
+export const SENIORITY_EXEMPT_HALF = 2_000_000
+/** Employer contributions to a pension fund above this % of the monthly salary (without fringe benefits) are a fringe benefit. */
+export const PENSION_FUND_FREE_PCT = 10
+/** Monthly return and payment: by the 20th of the next month (25th when filed on GDT e-Filing). */
+export const FILING_DAY = 20
+export const EFILING_DAY = 25
 
 /** NSSF contribution rules by the month they start to apply ('YYYY-MM'). Latest matching entry wins. */
 export interface NssfRule {
