@@ -199,6 +199,7 @@ const printPage = () => window.print()
         <div class="flex justify-between border-t border-[var(--k-border)] pt-1"><span>{{ t('fin.tax.fbt') }}</span><b>{{ m(r.fbt) }}</b></div>
       </div>
       <p class="text-sm"><i class="pi pi-calendar mr-1" />{{ t('fin.tax.deadline', { day: FILING_DAY, eday: EFILING_DAY }) }}</p>
+      <p class="text-sm"><i class="pi pi-users mr-1" />{{ t('fin.tax.manyStaff') }} <a href="/payroll/" class="font-semibold underline">{{ t('pr.title') }}</a></p>
 
       <Message severity="secondary" :closable="false" class="text-sm">{{ t('fin.tax.disclaimer') }}</Message>
       <RatesNote />

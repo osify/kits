@@ -1,0 +1,20 @@
+{
+  "id": "/payroll/",
+  "name": "Kitroid Payroll",
+  "short_name": "Kitroid Payroll",
+  "description": "Staff payroll: tax on salary, NSSF, fringe benefit tax, payslips and the monthly return. Works offline; data stays on your device.",
+  "lang": "km",
+  "start_url": "/payroll/",
+  "scope": "/payroll/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f6f7f5",
+  "theme_color": "#059669",
+  "categories": ["business", "productivity"],
+  "icons": [
+    { "src": "/icons/kitroid.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "/icons/pwa-192x192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/pwa-512x512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icons/maskable-icon-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

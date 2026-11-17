@@ -23,6 +23,7 @@ Users run the tools at their own risk; Kitroid never receives their data.
 | `/health/` | Personal & family health (private): people, readings (BP, sugar, weight, temp, SpO₂) with status + chart, medicines with daily tick list, appointments, vaccines/records with photos, readings CSV. PIN lock + encrypted backups | done (own DB `health`, `src/tools/health/`, rules in `rules.ts`) |
 | `/clinic/` | Doctor check-up: patient codes (P-0001), daily queue, vitals, private notes (complaint/exam/diagnosis/plan), prescription, fees from a price list, payment/debt, follow-ups, A5 prescription/summary/receipt, pharmacy QR, monthly report, CSV. PIN lock + encrypted backups | done (own DB `clinic`, `src/tools/clinic/`) |
 | `/invoice/` | Invoices & quotes: clients (VAT TIN), saved items, quote → invoice, draft → issue (numbers `INV-YYYY-0001` per year, no gaps: issued invoices are voided, never deleted), VAT 10% with tax-invoice title when the business has a VAT TIN, USD docs show riel at the doc's rate, payments/partial/overdue, A4 print (Khmer + English labels), receipt, share text, monthly report + invoices CSV, clients CSV in Customers format | done (own DB `invoice`, `src/tools/invoice/`; totals are stored on `doc` by `recalc()`) |
+| `/payroll/` | Payroll for all staff: staff list (resident, dependants, NSSF, KHR/USD salary, start/leave dates), one run per month (start from staff list, per-person bonus/seniority/fringe/pension fund/deduction, month exchange rate, close/reopen), GDT Tax on Salary return totals (residents / non-residents / FBT, due 20th or 25th e-Filing), NSSF totals, A4 return summary, A5 payslips, CSV, year view. PIN lock + encrypted backups | done (own DB `payroll`, `src/tools/payroll/`; **tax rules are the Finance tool's `finance/tax.ts` + `rates.ts`**, results stored per line by `computeLine()`) |
 
 This is **not** POS-52. POS-52 (`U:\BP\POS-52`, the server-based system used by LomOr & Co) is the
 reference for business logic: Quick Sale (`frontends/admin-portal/src/views/sales/QuickSaleView.vue`),
@@ -113,7 +114,7 @@ npm run dev        # http://localhost:4321  (service worker disabled in dev)
 npm run build      # static output in dist/ (includes sw.js)
 npm run preview    # serve dist/ (test offline: load once, stop the server, reload)
 npm run check      # astro check + vue-tsc (types)
-npm test           # sync, finance, money, calc, CRM, tax/NSSF, Tong Tin, health, privacy, exchange, clinic, invoice (also runs in CI)
+npm test           # sync, finance, money, calc, CRM, tax/NSSF, Tong Tin, health, privacy, exchange, clinic, invoice, payroll (also runs in CI)
 ```
 
 Deploy: push to `main` → `.github/workflows/deploy.yml` builds and publishes to GitHub Pages.

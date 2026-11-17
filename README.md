@@ -43,6 +43,7 @@ usually needs a monthly fee, an account, a server, or a steady internet connecti
 | ❤️ [**Family health**](https://kitroid.com/health/) | Medicines with reminders, blood pressure and sugar charts, appointments, vaccines. PIN lock and encrypted backups |
 | 🩺 [**Clinic**](https://kitroid.com/clinic/) | Patient queue, check-ups, prescriptions with a pharmacy QR (no diagnosis shared), fees and debts, follow-ups |
 | 🧾 [**Invoices & quotes**](https://kitroid.com/invoice/) | Quotes → invoices → receipts on A4 in Khmer and English, VAT 10% (tax invoice), riel and dollar with the riel total, payments, what each client still owes, CSV for your accountant |
+| 👥 [**Payroll**](https://kitroid.com/payroll/) | The whole month for all staff: tax on salary (NSSF pension deducted first), NSSF, fringe benefit tax, seniority pay, payslips and the totals for your GDT return |
 
 <p align="center">
   <img src="docs/img/payroll.png" width="760" alt="Salary tax and NSSF calculator with payslip">
@@ -83,7 +84,7 @@ Static site on GitHub Pages: [Astro](https://astro.build), [Vue](https://vuejs.o
 ```bash
 npm install
 npm run dev       # http://localhost:4321
-npm test          # all tool tests (sync, finance, tax, health, clinic, invoice, privacy, exchange…)
+npm test          # all tool tests (sync, finance, tax, health, clinic, invoice, payroll, privacy, exchange…)
 npm run build     # static site in dist/
 npm run preview   # production build with the offline service worker
 ```
